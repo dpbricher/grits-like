@@ -19,8 +19,6 @@ var AtlasParser	= Class.extend({
 
 	setImageData : function(sImageName, cDataObj) {
 		this.cImageMap[sImageName]	= cDataObj.frame;
-
-		console.log("this.cImageMap[" + sImageName + "] = " , this.cImageMap[sImageName]);
 	},
 
 	getImageData : function(sImageName) {

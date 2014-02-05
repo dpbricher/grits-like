@@ -8,9 +8,22 @@
 		<script type="text/javascript" src="../src/Main.js"></script>
 	</head>
 	<body>
-		<h1>Content goes here!</h1>
+		<canvas id="stage"></canvas>
 		<script type="text/javascript">
+
+		var onload	= function() {
 			new Main();
+		};
+
+		if (document == null)
+		{
+			document.addListener("onload", onload, false);
+		}
+		else
+		{
+			onload();
+		}
+
 		</script>
 	</body>
 </html>
