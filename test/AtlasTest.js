@@ -1,15 +1,17 @@
+/**
+ * Test for both AtlasParser and AtlasRenderer
+ */
 var AtlasTest	= Class.extend({
 	cStage : null,
-
 	cAtlasImage : null,
 
 	sInfoJson : null,
 
 	init : function() {
-		cStage			= document.getElementById("stage");
+		this.cStage			= document.getElementById("stage");
 
-		cStage.width	= 1024;
-		cStage.height	= 1024;
+		this.cStage.width	= 1024;
+		this.cStage.height	= 1024;
 
 		var cThis		= this;
 		var cXhr 		= new XMLHttpRequest();
@@ -33,16 +35,20 @@ var AtlasTest	= Class.extend({
 	},
 
 	onAtlasLoaded : function() {
-		var cParser	= new AtlasParser(this.cAtlasImage);
+		var cParser		= new AtlasParser(this.cAtlasImage);
 		cParser.parse(this.sInfoJson);
+
+		var cRenderer	= new AtlasRenderer(this.cStage, this.cAtlasImage);
 
 		// draw out some anims as a test here
 		var cData;
 		var sNextNum;
-		var ctx		= cStage.getContext("2d");
 
 		var nextX	= 0;
 		var nextY	= 0;
+
+		var scaleX	= 0.9;
+		var scaleY	= 0.9;
 
 		for (var i = 0; true; ++i)
 		{
@@ -53,14 +59,14 @@ var AtlasTest	= Class.extend({
 
 			if (cData == null) break;
 
-			ctx.drawImage(cParser.cAtlasImage, cData.x, cData.y, cData.w, cData.h, nextX, nextY, cData.w, cData.h);
+			cRenderer.draw(cData, nextX, nextY, scaleX, scaleY);
 
-			nextX	+= cData.w;
+			nextX	+= cData.w * scaleX;
 
-			if (nextX > cStage.width)
+			if (nextX > this.cStage.width)
 			{
 				nextX	= 0;
-				nextY	+= cData.h;
+				nextY	+= cData.h * scaleY;
 			}
 		}
 	}
