@@ -1,5 +1,5 @@
 var Main	= Class.extend({
 	init : function() {
-		new AtlasTest();
+		new TiledTest();
 	}
 });
