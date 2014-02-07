@@ -1,15 +1,15 @@
 var TiledTest	= Class.extend({
 	cAtlasImage : null,
-	cInfoJson : null,
+	sInfoJson : null,
 
 	init : function() {
 		var cThis	= this;
 
-		xhr	= XMLHttpRequest();
+		xhr	= new XMLHttpRequest();
 		xhr.open("GET", "data/map1.json", false);
 		xhr.send();
 
-		cInfoJson	= JSON.parse(xhr.responseText);
+		sInfoJson	= xhr.responseText;
 
 		cAtlasImage	= new Image();
 		cAtlasImage.onload	= function() {
@@ -20,8 +20,13 @@ var TiledTest	= Class.extend({
 
 	onAssetsLoaded : function() {
 		console.log("cAtlasImage = " , cAtlasImage);
-		console.log("cInfoJson = " , cInfoJson);
+		// console.log("sInfoJson = " , sInfoJson);
 
-		alert("test complete!");
+		var parser	= new TiledParser();
+		parser.parse(sInfoJson);
+
+		console.log("set index = " + parser.getImagePath(0));
+
+		// alert("test complete!");
 	}
 });
