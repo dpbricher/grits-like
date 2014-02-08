@@ -9,7 +9,7 @@ var TiledParser	= Class.extend({
 	// Vec2 dimensions of each tile
 	cTileDim : null,
 
-	// Vec2 number of rows and colums of tiles
+	// Vec2 number of rows and columns of tiles
 	cTileRC : null,
 
 	aTileSets : null,
@@ -17,11 +17,7 @@ var TiledParser	= Class.extend({
 	aObjectLayers : null,
 
 	iCurrentSet : 0,
-
-	/*init : function() {
-		//
-	},*/
-
+	
 	/**
 	 * Note : all layers have the same values for the following properties:
      *	"x":0
@@ -35,8 +31,8 @@ var TiledParser	= Class.extend({
 	parse : function(sDataJson) {
 		this.cTiledData		= JSON.parse(sDataJson);
 
-		this.cTileDim		= new Vec2(this.cTiledData.width, this.cTiledData.height);
-		this.cTileRC		= new Vec2(this.cTiledData.tilewidth, this.cTiledData.tileheight);
+		this.cTileDim		= new Vec2(this.cTiledData.tilewidth, this.cTiledData.tileheight);
+		this.cTileRC		= new Vec2(this.cTiledData.width, this.cTiledData.height);
 
 		this.aTileSets		= this.cTiledData.tilesets;
 
@@ -69,14 +65,39 @@ var TiledParser	= Class.extend({
 		return this.getCurrentSet().image;
 	},
 
-	getTileAtIndex : function(iIndex) {
+	getTileDataAt : function(i, j) {
+		var iIndex	= i + (j * (this.cTileRC.x));
+
+		return this.getTileDataAtIndex(iIndex);
+	},
+
+	getTileDataAtIndex : function(iIndex) {
+		aData	= [];
+
 		for (var i in this.aTileLayers)
 		{
 			if (this.aTileLayers[i].data[iIndex] != 0)
 			{
-				console.log("layer " + i + " has data at index " + iIndex);
+				aData.push(
+					this.getTileSrcData(
+						this.aTileLayers[i].data[iIndex] - this.getCurrentSet().firstgid
+					)
+				);
 			}
 		}
+
+		return aData;
+	},
+
+	getTileSrcData : function(iTileId) {
+		var iSrcRows	= this.getCurrentSet().imagewidth / this.cTileDim.x;
+
+		return new Rect(
+			(iTileId % iSrcRows) * this.cTileDim.x,
+			Math.floor(iTileId / iSrcRows) * this.cTileDim.y,
+			this.cTileDim.x,
+			this.cTileDim.y
+		);
 	},
 /*
 	getTileAtPos : function(x, y) {

@@ -1,10 +1,11 @@
 var TiledTest	= Class.extend({
+	cStage : null,
 	cAtlasImage : null,
 	cTiledParser : null,
-	// sInfoJson : null,
 
 	init : function() {
 		var cThis	= this;
+		this.cStage	= document.getElementById("stage");
 
 		xhr	= new XMLHttpRequest();
 		xhr.open("GET", "data/map1.json", false);
@@ -12,7 +13,6 @@ var TiledTest	= Class.extend({
 
 		this.cTiledParser	= new TiledParser();
 		this.cTiledParser.parse(xhr.responseText);
-		// sInfoJson	= xhr.responseText;
 
 		this.cAtlasImage	= new Image();
 		this.cAtlasImage.onload	= function() {
@@ -22,23 +22,37 @@ var TiledTest	= Class.extend({
 	},
 
 	onAssetsLoaded : function() {
-		// console.log("cAtlasImage = " , cAtlasImage);
-		// console.log("sInfoJson = " , sInfoJson);
+		var cScale	= new Vec2(0.1, 0.1);
 
-		// for (var i = 200; i <= 250; ++i)
-		// {
-		// 	this.cTiledParser.getTileAtIndex(i);
-		// }
+		this.cStage.width	= this.cTiledParser.cTileDim.x * this.cTiledParser.cTileRC.x * cScale.x;
+		this.cStage.height	= this.cTiledParser.cTileDim.y * this.cTiledParser.cTileRC.y * cScale.y;
+		this.cStage.style.backgroundColor	= "red";
 
-		this.cTiledParser.getTilesInArea(
-			new Rect(
-				0,
-				0,
-				5 * this.cTiledParser.cTileDim.x,
-				5 * this.cTiledParser.cTileDim.y
-			)
-		);
+		var ctx	= this.cStage.getContext("2d");
 
-		// alert("test complete!");
+		for (var i = this.cTiledParser.cTileRC.x - 1; i >= 0; --i)
+		{
+			for (var j = this.cTiledParser.cTileRC.y - 1; j >= 0; --j)
+			{
+				var aData	= this.cTiledParser.getTileDataAt(i, j);
+
+				for (var k = 0; k < aData.length; ++k)
+				{
+					var cSrcRect	= aData[k];
+
+					ctx.drawImage(
+						this.cAtlasImage,
+						cSrcRect.x,
+						cSrcRect.y,
+						cSrcRect.w,
+						cSrcRect.h,
+						i * this.cTiledParser.cTileDim.x * cScale.x,
+						j * this.cTiledParser.cTileDim.y * cScale.y,
+						this.cTiledParser.cTileDim.x * cScale.x,
+						this.cTiledParser.cTileDim.y * cScale.y
+					);
+				}
+			}
+		}
 	}
 });
