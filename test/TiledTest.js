@@ -1,6 +1,7 @@
 var TiledTest	= Class.extend({
 	cAtlasImage : null,
-	sInfoJson : null,
+	cTiledParser : null,
+	// sInfoJson : null,
 
 	init : function() {
 		var cThis	= this;
@@ -9,23 +10,25 @@ var TiledTest	= Class.extend({
 		xhr.open("GET", "data/map1.json", false);
 		xhr.send();
 
-		sInfoJson	= xhr.responseText;
+		this.cTiledParser	= new TiledParser();
+		this.cTiledParser.parse(xhr.responseText);
+		// sInfoJson	= xhr.responseText;
 
-		cAtlasImage	= new Image();
-		cAtlasImage.onload	= function() {
+		this.cAtlasImage	= new Image();
+		this.cAtlasImage.onload	= function() {
 			cThis.onAssetsLoaded();
 		}
-		cAtlasImage.src	= "images/grits_master.png";
+		this.cAtlasImage.src	= "images/" + this.cTiledParser.getImagePath();
 	},
 
 	onAssetsLoaded : function() {
-		console.log("cAtlasImage = " , cAtlasImage);
+		// console.log("cAtlasImage = " , cAtlasImage);
 		// console.log("sInfoJson = " , sInfoJson);
 
-		var parser	= new TiledParser();
-		parser.parse(sInfoJson);
-
-		console.log("set index = " + parser.getImagePath(0));
+		for (var i = 200; i <= 250; ++i)
+		{
+			this.cTiledParser.getTileAt(i);
+		}
 
 		// alert("test complete!");
 	}
