@@ -17,7 +17,7 @@ var TiledParser	= Class.extend({
 	aObjectLayers : null,
 
 	iCurrentSet : 0,
-	
+
 	/**
 	 * Note : all layers have the same values for the following properties:
      *	"x":0
@@ -124,14 +124,18 @@ var TiledParser	= Class.extend({
 		// console.log("cRect = " , cRect);
 		// console.log("cFullArea = " , cFullArea);
 
+		var aData	= [];
+
 		// next build an array of tile data for all the given indexes that this area covers
 		for (var i = cFullArea.left(); i <= cFullArea.right(); ++i)
 		{
 			for (var j = cFullArea.top(); j <= cFullArea.bottom(); ++j)
 			{
-				this.getTileAtIndex(i + (j * this.cTileRC.x));
+				aData	= aData.concat(this.getTileDataAt(i, j));
 			}
 		}
+
+		return aData;
 	},
 
 	getCurrentSet : function() {

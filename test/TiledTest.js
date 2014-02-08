@@ -28,7 +28,7 @@ var TiledTest	= Class.extend({
 		this.cStage.height	= this.cTiledParser.cTileDim.y * this.cTiledParser.cTileRC.y * cScale.y;
 		this.cStage.style.backgroundColor	= "red";
 
-		var ctx	= this.cStage.getContext("2d");
+		var cRenderer		= new TiledRenderer(this.cStage, this.cAtlasImage);
 
 		for (var i = this.cTiledParser.cTileRC.x - 1; i >= 0; --i)
 		{
@@ -38,18 +38,12 @@ var TiledTest	= Class.extend({
 
 				for (var k = 0; k < aData.length; ++k)
 				{
-					var cSrcRect	= aData[k];
-
-					ctx.drawImage(
-						this.cAtlasImage,
-						cSrcRect.x,
-						cSrcRect.y,
-						cSrcRect.w,
-						cSrcRect.h,
+					cRenderer.draw(
+						aData[k],
 						i * this.cTiledParser.cTileDim.x * cScale.x,
 						j * this.cTiledParser.cTileDim.y * cScale.y,
-						this.cTiledParser.cTileDim.x * cScale.x,
-						this.cTiledParser.cTileDim.y * cScale.y
+						cScale.x,
+						cScale.y
 					);
 				}
 			}
