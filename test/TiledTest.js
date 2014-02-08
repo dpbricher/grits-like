@@ -25,10 +25,19 @@ var TiledTest	= Class.extend({
 		// console.log("cAtlasImage = " , cAtlasImage);
 		// console.log("sInfoJson = " , sInfoJson);
 
-		for (var i = 200; i <= 250; ++i)
-		{
-			this.cTiledParser.getTileAt(i);
-		}
+		// for (var i = 200; i <= 250; ++i)
+		// {
+		// 	this.cTiledParser.getTileAtIndex(i);
+		// }
+
+		this.cTiledParser.getTilesInArea(
+			new Rect(
+				0,
+				0,
+				5 * this.cTiledParser.cTileDim.x,
+				5 * this.cTiledParser.cTileDim.y
+			)
+		);
 
 		// alert("test complete!");
 	}

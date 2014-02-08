@@ -35,8 +35,8 @@ var TiledParser	= Class.extend({
 	parse : function(sDataJson) {
 		this.cTiledData		= JSON.parse(sDataJson);
 
-		this.cTiledDim		= new Vec2(this.cTiledData.width, this.cTiledData.height);
-		this.cTiledRC		= new Vec2(this.cTiledData.tilewidth, this.cTiledData.tileheight);
+		this.cTileDim		= new Vec2(this.cTiledData.width, this.cTiledData.height);
+		this.cTileRC		= new Vec2(this.cTiledData.tilewidth, this.cTiledData.tileheight);
 
 		this.aTileSets		= this.cTiledData.tilesets;
 
@@ -69,7 +69,7 @@ var TiledParser	= Class.extend({
 		return this.getCurrentSet().image;
 	},
 
-	getTileAt : function(iIndex) {
+	getTileAtIndex : function(iIndex) {
 		for (var i in this.aTileLayers)
 		{
 			if (this.aTileLayers[i].data[iIndex] != 0)
@@ -78,10 +78,40 @@ var TiledParser	= Class.extend({
 			}
 		}
 	},
+/*
+	getTileAtPos : function(x, y) {
+		// find index of tile at this position
+		var iIndex	=
+			Math.floor(x / this.cTileDim.x) +
+			Math.floor(y / this.cTileDim.y) * cTileRC.x;
 
-	// getTilesInArea : function(cRect) {
-	// 	//
-	// },
+		// then return data for that index
+		return this.getTileAtIndex(iIndex);
+	},
+*/
+	getTilesInArea : function(cRect) {
+		// first find all tiles within the given area
+		// flooring the area's left and top values and ceil-ing its right and bottom to the nearest multiple of tile width and height should do that
+		var cFullArea		= new Rect();
+		cFullArea.x			= Math.floor(cRect.x / this.cTileDim.x);
+		cFullArea.y			= Math.floor(cRect.y / this.cTileDim.y);
+		cFullArea.w			= Math.ceil(cRect.right() / this.cTileDim.x) - cFullArea.x;
+		cFullArea.h			= Math.ceil(cRect.bottom() / this.cTileDim.y) - cFullArea.y;
+
+		// console.log("this.cTileDim = " , this.cTileDim);
+		
+		// console.log("cRect = " , cRect);
+		// console.log("cFullArea = " , cFullArea);
+
+		// next build an array of tile data for all the given indexes that this area covers
+		for (var i = cFullArea.left(); i <= cFullArea.right(); ++i)
+		{
+			for (var j = cFullArea.top(); j <= cFullArea.bottom(); ++j)
+			{
+				this.getTileAtIndex(i + (j * this.cTileRC.x));
+			}
+		}
+	},
 
 	getCurrentSet : function() {
 		return this.aTileSets[this.iCurrentSet];
