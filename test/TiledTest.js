@@ -30,6 +30,7 @@ var TiledTest	= Class.extend({
 
 		var cRenderer		= new TiledRenderer(this.cStage, this.cAtlasImage);
 
+		// draw map
 		for (var i = this.cTiledParser.cTileRC.x - 1; i >= 0; --i)
 		{
 			for (var j = this.cTiledParser.cTileRC.y - 1; j >= 0; --j)
@@ -48,5 +49,24 @@ var TiledTest	= Class.extend({
 				}
 			}
 		}
+
+		// draw collision areas
+		var cCollisionData	= this.cTiledParser.cObjectLayers["collision"];
+
+		if (cCollisionData != null)
+		{
+			var ctx			= this.cStage.getContext("2d");
+			ctx.globalAlpha	= 0.3;
+
+			for (var j in cCollisionData.objects)
+			{
+				var cData		= cCollisionData.objects[j];
+
+				ctx.fillStyle	= (cData.properties.collisionFlags == null) ? "green" : "blue";
+				ctx.fillRect(cData.x * cScale.x, cData.y * cScale.y, cData.width * cScale.x, cData.height * cScale.y);
+			}
+		}
+
+		ctx.globalAlpha	= 1.0;
 	}
 });
