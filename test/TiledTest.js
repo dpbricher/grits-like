@@ -51,18 +51,33 @@ var TiledTest	= Class.extend({
 		}
 
 		// draw collision areas
+		var ctx				= this.cStage.getContext("2d");
+		ctx.globalAlpha		= 0.3;
+
 		var cCollisionData	= this.cTiledParser.cObjectLayers["collision"];
 
 		if (cCollisionData != null)
 		{
-			var ctx			= this.cStage.getContext("2d");
-			ctx.globalAlpha	= 0.3;
-
 			for (var j in cCollisionData.objects)
 			{
 				var cData		= cCollisionData.objects[j];
 
 				ctx.fillStyle	= (cData.properties.collisionFlags == null) ? "green" : "blue";
+				ctx.fillRect(cData.x * cScale.x, cData.y * cScale.y, cData.width * cScale.x, cData.height * cScale.y);
+			}
+		}
+
+		// draw markers showing positions of environment items
+		var cEnvData	= this.cTiledParser.cObjectLayers["environment"];
+
+		if (cEnvData != null)
+		{
+			ctx.fillStyle	= "red";
+
+			for (var i in cEnvData.objects)
+			{
+				var cData	= cEnvData.objects[i];
+
 				ctx.fillRect(cData.x * cScale.x, cData.y * cScale.y, cData.width * cScale.x, cData.height * cScale.y);
 			}
 		}
