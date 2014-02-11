@@ -9,6 +9,10 @@ var Loader	= Class.extend({
 		this.aLoadQueue.push(sUri);
 	},
 
+	queueList : function(aUriList) {
+		this.aLoadQueue	= this.aLoadQueue.concat(aUriList);
+	},
+
 	/**
 	 * copies and empties the current queue, then loads each queued asset in order.
 	 * Once loading is complete calls the passed callback function with a dictionary of the loaded assets.
