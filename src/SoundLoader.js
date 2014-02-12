@@ -20,8 +20,37 @@ var SoundLoader	= Class.extend({
 	_decodeSounds : function(cDataList) {
 		console.log("cDataList = " , cDataList);
 
-		var AudioContext	= window.AudioContext || AudioContext;
+		var iDataCount		= 0;
+		var iDecodedCount	= 0;
 
-		var context			= new AudioContext();
+		var cThis			= this;
+
+		var zOnSoundDecoded;
+
+		zOnSoundDecoded	= function(sName, cSound) {
+			cThis.cSounds[sName]	= cSound;
+
+			++iDecodedCount;
+
+			if (iDecodedCount >= iDataCount)
+			{
+				cThis.zCallback();
+			}
+		};
+
+		var context	= Utils.getAudioContext();
+
+		for (var sName in cDataList)
+		{
+			++iDataCount;
+
+			context.decodeAudioData(
+				cDataList[sName],
+				function(cSound) {
+					zOnSoundDecoded(sName, cSound)
+				},
+				function() {}
+			);
+		}
 	}
 });
