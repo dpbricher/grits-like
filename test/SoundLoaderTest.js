@@ -18,12 +18,17 @@ var SoundLoaderTest	= Class.extend({
 	},
 
 	testSounds : function() {
-		console.log("Test complete!");
-
 		var context		= Utils.getAudioContext();
-		var sound		= context.createBufferSource();
-		sound.buffer	= this.cLoader.cSounds["explode0.ogg"];
-		sound.connect(context.destination);
-		sound.start(0);
+
+		var fOffset		= 0.0;
+
+		for (var i in this.cLoader.cSoundMap)
+		{
+			var sound		= context.createBufferSource();
+			sound.buffer	= this.cLoader.getSoundData(i);
+			sound.connect(context.destination);
+			sound.start(fOffset);
+			fOffset			+= 0.5;
+		}
 	}
 });

@@ -1,14 +1,15 @@
 var SoundLoader	= Class.extend({
-	cSounds : null,
 	cLoader : null,
+	cSoundMap : null,
 
 	zCallback : null,
 
 	init : function(cLoaderRef) {
-		this.cSounds	= {};
+		this.cSoundMap	= {};
 		this.cLoader	= cLoaderRef;
 	},
 
+	// can't currently handle multiple concurrent loadSounds, due to having the one persistent callback function >.<
 	loadSounds : function(aFileList, zCallback) {
 		this.zCallback	= zCallback;
 
@@ -17,18 +18,18 @@ var SoundLoader	= Class.extend({
 		this.cLoader.startQueue(this._decodeSounds, this);
 	},
 
-	_decodeSounds : function(cDataList) {
-		console.log("cDataList = " , cDataList);
+	getSoundData : function(sName) {
+		return this.cSoundMap[sName];
+	},
 
+	_decodeSounds : function(cDataList) {
 		var iDataCount		= 0;
 		var iDecodedCount	= 0;
 
 		var cThis			= this;
 
-		var zOnSoundDecoded;
-
-		zOnSoundDecoded	= function(sName, cSound) {
-			cThis.cSounds[sName]	= cSound;
+		var zOnSoundDecoded	= function(sName, cSound) {
+			cThis.cSoundMap[sName]	= cSound;
 
 			++iDecodedCount;
 
@@ -36,6 +37,19 @@ var SoundLoader	= Class.extend({
 			{
 				cThis.zCallback();
 			}
+		};
+
+		var zMakeSuccCallback	= function(sName) {
+			return function(cSound) {
+				zOnSoundDecoded(sName, cSound)
+			};
+		};
+
+		var zMakeErrCallback	= function(sName) {
+			return function() {
+				console.log("Failed to decode audio data for " + sName);
+				zOnSoundDecoded(sName, null);
+			};
 		};
 
 		var context	= Utils.getAudioContext();
@@ -46,10 +60,8 @@ var SoundLoader	= Class.extend({
 
 			context.decodeAudioData(
 				cDataList[sName],
-				function(cSound) {
-					zOnSoundDecoded(sName, cSound)
-				},
-				function() {}
+				zMakeSuccCallback(sName),
+				zMakeErrCallback(sName)
 			);
 		}
 	}
