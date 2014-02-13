@@ -2,27 +2,24 @@ var SoundLoader	= Class.extend({
 	cLoader : null,
 	cSoundMap : null,
 
-	zCallback : null,
-
 	init : function(cLoaderRef) {
 		this.cSoundMap	= {};
 		this.cLoader	= cLoaderRef;
 	},
 
-	// can't currently handle multiple concurrent loadSounds, due to having the one persistent callback function >.<
 	loadSounds : function(aFileList, zCallback) {
-		this.zCallback	= zCallback;
-
 		this.cLoader.queueList(aFileList);
 
-		this.cLoader.startQueue(this._decodeSounds, this);
+		this.cLoader.startQueue(
+			Utils.bindFunc(this, this._decodeSounds, zCallback)
+		);
 	},
 
 	getSoundData : function(sName) {
 		return this.cSoundMap[sName];
 	},
 
-	_decodeSounds : function(cDataList) {
+	_decodeSounds : function(zCallback, cDataList) {
 		var iDataCount		= 0;
 		var iDecodedCount	= 0;
 
@@ -35,7 +32,7 @@ var SoundLoader	= Class.extend({
 
 			if (iDecodedCount >= iDataCount)
 			{
-				cThis.zCallback();
+				zCallback();
 			}
 		};
 
