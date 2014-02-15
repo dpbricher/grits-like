@@ -1,8 +1,8 @@
 var Utils	= {
-	getAudioContext : function() {
-		var audioContext	= window.AudioContext || window.webkitAudioContext;
+	cAudioContext : null,
 
-		return new audioContext();
+	getAudioContext : function() {
+		return this.cAudioContext;
 	},
 
 	bindFunc : function(cScope, zFunction) {
@@ -13,5 +13,15 @@ var Utils	= {
 
 			zFunction.apply(cScope, aBoundArgs);
 		};
+	},
+
+	clamp : function(fValue, fMin, fMax) {
+		return Math.min(Math.max(0.0, fValue), fMax);
 	}
 };
+
+(function() {
+	var audioContext	= window.AudioContext || window.webkitAudioContext;
+	
+	Utils.cAudioContext	= new audioContext();
+})();
