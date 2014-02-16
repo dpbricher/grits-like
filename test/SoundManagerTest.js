@@ -54,7 +54,7 @@ var SoundManagerTest	= Class.extend({
 		);
 	},
 
-	// tests loop, volume and stop controls
+	// tests loop, volume, mute and stop controls
 	startControlTest : function() {
 		this.cLoader.loadSounds(
 			["sounds/" + SoundNames.MACH_GUN],
@@ -78,7 +78,7 @@ var SoundManagerTest	= Class.extend({
 					this.cManager.getGlobalVolume() - 0.7
 				);
 			}),
-			iStartDelay + 2000
+			iStartDelay + 1000
 		);
 
 		setTimeout(
@@ -87,14 +87,29 @@ var SoundManagerTest	= Class.extend({
 					this.cManager.getSound(sName).getVolume() - 0.7
 				);
 			}),
+			iStartDelay + 2000
+		);
+
+		setTimeout(
+			Utils.bindFunc(this, function() {
+				this.cManager.setGlobalMuted(true);
+			}),
+			iStartDelay + 3000
+		);
+
+		setTimeout(
+			Utils.bindFunc(this, function() {
+				this.cManager.setGlobalMuted(false);
+			}),
 			iStartDelay + 4000
 		);
 
 		setTimeout(
 			Utils.bindFunc(this, function() {
-				this.cManager.stopSound(sName, 2.0);
+				console.log("stop triggered!");
+				this.cManager.stopSound(sName, 1.0);
 			}),
-			iStartDelay + 4000
+			iStartDelay + 5000
 		);
 	},
 
