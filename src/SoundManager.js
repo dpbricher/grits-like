@@ -26,11 +26,25 @@ var SoundManager	= Class.extend({
 		}
 	},
 
-	startSound : function(sName, fOffset) {
+	startSound : function(sName, fDelay) {
 		var cSound	= this.getSound(sName);
 
 		if (cSound != null)
-			cSound.start(fOffset || 0.0);
+			cSound.start(fDelay);
+	},
+
+	stopSound : function(sName, fDelay) {
+		var cSound	= this.getSound(sName);
+
+		if (cSound != null)
+			cSound.stop(fDelay);
+	},
+
+	loopSound : function(sName, fDelay) {
+		var cSound	= this.getSound(sName);
+
+		if (cSound != null)
+			cSound.loop(fDelay);
 	},
 
 	getSound : function(sName) {

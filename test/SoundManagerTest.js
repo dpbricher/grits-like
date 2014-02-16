@@ -10,9 +10,10 @@ var SoundManagerTest	= Class.extend({
 
 		this.cManager	= new SoundManager(this.cLoader);
 
-		this.startSfxTest();
+		// this.startSfxTest();
 		// this.startBgMenuTest();
-		this.startBgGameTest();
+		// this.startBgGameTest();
+		this.startControlTest();
 	},
 
 	startSfxTest : function() {
@@ -50,6 +51,50 @@ var SoundManagerTest	= Class.extend({
 		this.cLoader.loadSounds(
 			["sounds/" + SoundNames.BG_GAME],
 			Utils.bindFunc(this, this.onSoundsLoaded, [SoundNames.BG_GAME])
+		);
+	},
+
+	// tests loop, volume and stop controls
+	startControlTest : function() {
+		this.cLoader.loadSounds(
+			["sounds/" + SoundNames.MACH_GUN],
+			Utils.bindFunc(this, this.onControlTestLoad, SoundNames.MACH_GUN)
+		);
+	},
+
+	onControlTestLoad : function(sName) {
+		this.cManager.createSoundList(this.cLoader.cSoundMap);
+
+		var iStartDelay	= 1000;
+
+		console.log("start triggered!");
+		this.cManager.loopSound(sName, iStartDelay / 1000);
+
+		// this.cManager.getSound(sName).cSource.onended	= Utils.bindFunc(console, console.log, "Sound ended!");
+
+		setTimeout(
+			Utils.bindFunc(this, function() {
+				this.cManager.setGlobalVolume(
+					this.cManager.getGlobalVolume() - 0.7
+				);
+			}),
+			iStartDelay + 2000
+		);
+
+		setTimeout(
+			Utils.bindFunc(this, function() {
+				this.cManager.getSound(sName).setVolume(
+					this.cManager.getSound(sName).getVolume() - 0.7
+				);
+			}),
+			iStartDelay + 4000
+		);
+
+		setTimeout(
+			Utils.bindFunc(this, function() {
+				this.cManager.stopSound(sName, 2.0);
+			}),
+			iStartDelay + 4000
 		);
 	},
 
