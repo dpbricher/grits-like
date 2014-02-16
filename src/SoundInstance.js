@@ -1,3 +1,10 @@
+/**
+ * Represents the data required to play a single sound.
+ * 
+ * TODO : At the moment cSource only points to the last AudioBufferSourceNode
+ * created by the "start" function, and there is no way to access any previous
+ * buffers that might still be playing
+ */
 var SoundInstance	= Class.extend({
 	cContext : null,
 	cBuffer : null,
