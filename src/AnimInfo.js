@@ -41,28 +41,26 @@ var AnimInfo	= Class.extend({
 		return this.iCurrentFrame;
 	},
 
-	getTotalFrames : function() {
+	getLastFrame : function() {
 		return this.aFrames.length - 1;
 	},
 
 	gotoFrame : function(iFrame) {
-		this.iCurrentFrame	= Utils.clamp(iFrame, 1, this.getTotalFrames());
+		if (!isNaN(iFrame))
+			this.iCurrentFrame	= Utils.clamp(iFrame, 0, this.getLastFrame());
 	},
 
 	// steps the animation's current frame forward iNumFrames, wrapping around if the current frame goes beyond its bounds
 	stepFrames : function(iNumFrames) {
-		if (iNumFrames == Number.POSITIVE_INFINITY || iNumFrames == Number.NEGATIVE_INFINITY)
-			return;
-
 		var iTargetFrame	= this.getCurrentFrame() + iNumFrames;
 
-		// wrap around if target frame above last frame
-		iTargetFrame	%= (this.getTotalFrames() + 1);
+		// wrap around if target frame exceeds total frames
+		iTargetFrame	%= (this.getLastFrame() + 1);
 		
 		// wrap around if target frame is below first frame
-		while (iTargetFrame < 0)
-			iTargetFrame	+= (this.getTotalFrames() + 1);
+		if (iTargetFrame < 0)
+			iTargetFrame	+= (this.getLastFrame() + 1);
 
-		this.iCurrentFrame	= iTargetFrame;
+		this.gotoFrame(iTargetFrame);
 	}
 });
