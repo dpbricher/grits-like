@@ -1,10 +1,21 @@
 var InputTest	= Class.extend({
+	cKeyManager : null,
+
 	init : function() {
-		var cStage	= document.getElementById("stage");
+		this.cKeyManager	= new KeyboardManager(document.body);
 
-		cStage.width	=
-		cStage.height	= 1024;
+		setInterval(
+			Utils.bindFunc(this, this.logHeldKeys),
+			1000
+		);
+	},
 
-		var cManager	= new KeyboardManager(cStage);
+	logHeldKeys : function() {
+		var aHeld	= this.cKeyManager.getHeldKeys();
+
+		for (var i in aHeld)
+		{
+			console.log("key " + i + " is held!");
+		}
 	}
 });
