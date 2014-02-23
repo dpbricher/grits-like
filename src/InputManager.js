@@ -28,6 +28,21 @@ var InputManager	= Class.extend({
 		return this.cActionsList;
 	},
 
+	/**
+	 * returns the position of the main mouse button event if the button is held, or null otherwise
+	 */
+	getMouseHeldPos : function() {
+		var cMousePos	= null;
+		var cEvent		= this.cMouseManager.getHeldButtons()[0];
+
+		if (cEvent != null)
+		{
+			cMousePos	= new Vec2(cEvent.clientX, cEvent.clientY);
+		}
+
+		return cMousePos;
+	},
+
 	_updateActions : function() {
 		var sAction;
 		var cHeldKeys	= this.cKeyManager.getHeldKeys();

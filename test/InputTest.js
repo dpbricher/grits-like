@@ -21,7 +21,7 @@ var InputTest	= Class.extend({
 		// this.cInputManager.bindAction(KeyCodes.D, Actions.MOVE_RIGHT);
 
 		// this.cInputManager.bindAction(KeyCodes.MOUSE_MAIN, Actions.FIRE);
-		
+
 		this.cInputManager.bindAction(KeyCodes.ARROW_UP, Actions.MOVE_UP);
 		this.cInputManager.bindAction(KeyCodes.ARROW_LEFT, Actions.MOVE_LEFT);
 		this.cInputManager.bindAction(KeyCodes.ARROW_DOWN, Actions.MOVE_DOWN);
@@ -30,9 +30,16 @@ var InputTest	= Class.extend({
 		this.cInputManager.bindAction(KeyCodes.SPACE, Actions.FIRE);
 
 		setInterval(
-			Utils.bindFunc(this, this.logLiveActions),
+			Utils.bindFunc(this, this.logMouseActionPos),
 			1000
 		);
+	},
+
+	logMouseActionPos : function() {
+		var cPos	= this.cInputManager.getMouseHeldPos();
+
+		if (cPos != null)
+			console.log("cPos = " , cPos);
 	},
 
 	logLiveActions : function() {
