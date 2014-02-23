@@ -1,7 +1,7 @@
 var MouseManager	= Class.extend({
 	cListenerTarget : null,
 
-	aButtonsHeld : [],
+	cButtonsHeld : {},
 
 	init : function(cListenerRef) {
 		this.cListenerTarget	= cListenerRef;
@@ -13,14 +13,14 @@ var MouseManager	= Class.extend({
 	},
 
 	onButtonUp : function(e) {
-		delete this.aButtonsHeld[e.button];
+		delete this.cButtonsHeld[e.button];
 	},
 
 	onButtonDown : function(e) {
-		this.aButtonsHeld[e.button]	= e;
+		this.cButtonsHeld[e.button]	= e;
 	},
 
 	getHeldButtons : function() {
-		return this.aButtonsHeld.slice();
+		return this.cButtonsHeld;
 	}
 });

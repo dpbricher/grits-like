@@ -1,8 +1,8 @@
 var KeyboardManager	= Class.extend({
 	cListenerTarget : null,
 
-	// array where indexes of currently held keys are set to "true"
-	aKeysDown : [],
+	// map where indexes of currently held keys are set to "true"
+	cKeysDown : {},
 
 	init : function(cListenerRef) {
 		this.cListenerTarget	= cListenerRef;
@@ -16,11 +16,11 @@ var KeyboardManager	= Class.extend({
 	},
 
 	onKeyUp : function(e) {
-		delete this.aKeysDown[e.keyCode];
+		delete this.cKeysDown[e.keyCode];
 	},
 
 	onKeyDown : function(e) {
-		this.aKeysDown[e.keyCode]	= true;
+		this.cKeysDown[e.keyCode]	= true;
 	},
 
 	/**
@@ -31,6 +31,6 @@ var KeyboardManager	= Class.extend({
 	// },
 
 	getHeldKeys : function() {
-		return this.aKeysDown.slice();
+		return this.cKeysDown;
 	}
 });
