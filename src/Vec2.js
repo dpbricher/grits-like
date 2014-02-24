@@ -5,5 +5,9 @@ var Vec2	= Class.extend({
 	init : function(x, y) {
 		this.x	= x;
 		this.y	= y;
+	},
+
+	clone : function() {
+		return new Vec2(this.x, this.y);
 	}
 });
