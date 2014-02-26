@@ -2,6 +2,8 @@ var Entity	= Class.extend({
 	cPos : new Vec2(0, 0),
 	cDim : new Vec2(0, 0),
 
+	bIsKilled : false,
+
 	update : function() {
 	},
 
@@ -21,5 +23,13 @@ var Entity	= Class.extend({
 	setDim : function(w, h) {
 		this.cDim.x	= w;
 		this.cDim.y	= h;
+	},
+
+	flagKilled : function() {
+		this.bIsKilled	= true;
+	},
+
+	getIsKilled : function() {
+		return this.bIsKilled;
 	}
 });
