@@ -2,6 +2,9 @@ var Entity	= Class.extend({
 	cPos : new Vec2(0, 0),
 	cDim : new Vec2(0, 0),
 
+	// a reference to the current anim info for this entity
+	cAnim : null,
+
 	bIsKilled : false,
 
 	update : function() {
@@ -23,6 +26,10 @@ var Entity	= Class.extend({
 	setDim : function(w, h) {
 		this.cDim.x	= w;
 		this.cDim.y	= h;
+	},
+
+	setAnim : function(cAnim) {
+		this.cAnim	= cAnim;
 	},
 
 	flagKilled : function() {
