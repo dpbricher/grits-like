@@ -16,35 +16,39 @@ var EntityManager	= Class.extend({
 	},
 
 	removeEntity : function(cEntity) {
-		for (var sKey in cEntityMap)
+		for (var sKey in this.cEntityMap)
 		{
-			if (cEntityMap[sKey] == cEntity)
+			if (this.cEntityMap[sKey] == cEntity)
 			{
-				delete cEntityMap[sKey];
+				delete this.cEntityMap[sKey];
 				break;
 			}
 		}
 	},
 
+	_removeEntityByKey : function(sKey) {
+		delete this.cEntityMap[sKey];
+	},
+
 	update : function() {
 		var cEntity;
-		var aKilled	= [];
+		var aKilledKeys	= [];
 
-		for (var sKey in cEntityMap)
+		for (var sKey in this.cEntityMap)
 		{
-			cEntity	= cEntityMap[sKey];
+			cEntity	= this.cEntityMap[sKey];
 
 			cEntity.update();
 
 			if (cEntity.getIsKilled())
 			{
-				aKilled.push(sKey);
+				aKilledKeys.push(sKey);
 			}
 		}
 
-		for (var i in aKilled)
+		for (var i in aKilledKeys)
 		{
-			this.removeEntity(aKilled[i]);
+			this._removeEntityByKey(aKilledKeys[i]);
 		}
 	}
 });
