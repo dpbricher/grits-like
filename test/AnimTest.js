@@ -25,12 +25,14 @@ var AnimTest	= Class.extend({
 		for (var i in SequenceNames)
 		{
 			this.aInfoList.push(
-				new AnimInfo(aImages, SequenceNames[i])
+				new AnimState(
+					new AnimInfo(aImages, SequenceNames[i])
+				)
 			);
 		}
 
 		this.aInfoList.forEach(function(cItem) {
-			console.log(cItem.getFirstName() + " sequence aFrames = " , cItem.aFrames);
+			console.log(cItem.getAnimInfo().getFirstName() + " sequence aFrames = " , cItem.getAnimInfo().aFrames);
 		});
 
 		this.cLoader.autoLoad("images/" + this.cParser.getAtlasName(), this.startRenderTest, this);
