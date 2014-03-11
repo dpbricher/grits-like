@@ -5,6 +5,7 @@ var b2	= {
 	Vec2 : Box2D.Common.Math.b2Vec2,
 	BodyDef : Box2D.Dynamics.b2BodyDef,
 	Body : Box2D.Dynamics.b2Body,
+	ContactListener : Box2D.Dynamics.b2ContactListener,
 	FixtureDef : Box2D.Dynamics.b2FixtureDef,
 	Fixture : Box2D.Dynamics.b2Fixture,
 	World : Box2D.Dynamics.b2World,

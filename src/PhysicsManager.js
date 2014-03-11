@@ -22,6 +22,10 @@ var PhysicsManager	= Class.extend({
 	 * sType : "static" or "dynamic"
 	 * bIsBouncy : set to true for bouncy fixture
 	 *
+	 * Can also optionally define the following property:
+	 *
+	 * cUserData : this can be any desired data, and gets assigned to the created Body's userData property
+	 *
 	 * Currently this function is pretty much just a copy of the udacity implementation...
 	 */
 	addBody : function(cEntityDef) {		
@@ -40,6 +44,8 @@ var PhysicsManager	= Class.extend({
 		cBodyDef.position.x		= cEntityDef.cPos.x;
 		cBodyDef.position.y		= cEntityDef.cPos.y;
 
+		cBodyDef.userData		= cEntityDef.cUserData;
+
 		var cBody				= this._registerBody(cBodyDef);
 
 		var cFixDef				= new b2.FixtureDef();
@@ -57,6 +63,30 @@ var PhysicsManager	= Class.extend({
         cBody.CreateFixture(cFixDef);
 
         return cBody;
+	},
+
+	/**
+	 * Takes an object defining box2dweb callback functions, and creates a box2dweb b2ContactListener with those callbacks
+	 */
+	addContactListener : function (cCallbacks) {
+		var cListener	= new b2.ContactListener();
+
+		if (typeof(cCallbacks.PostSolve) == "function")
+		{
+			/**
+			 * According to the udacity course we will want to contruct the callback arguments in the following way.
+			 * Will probably look into this myself later, but cba right now :D
+			 */
+			cListener.PostSolve	= function (contact, impulse) {
+				cCallbacks.PostSolve(
+					contact.GetFixtureA().GetBody(),
+                    contact.GetFixtureB().GetBody(),
+                    impulse.normalImpulses[0]
+                );
+			};
+		}
+
+		this.cWorld.SetContactListener(cListener);
 	},
 
 	removeBody : function(cBody) {
