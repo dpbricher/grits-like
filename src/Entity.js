@@ -1,9 +1,11 @@
+/**
+ * Base entity class
+ */
 var Entity	= Class.extend({
-	cPos : new Vec2(0, 0),
-	cDim : new Vec2(0, 0),
+	cPos : new b2.Vec2(0, 0),
 
-	// a reference to the current anim info for this entity
-	cAnim : null,
+	// save dimensions as half width / height because that's the values that Box2D uses
+	cHalfDim : new b2.Vec2(0, 0),
 
 	bIsKilled : false,
 
@@ -11,7 +13,7 @@ var Entity	= Class.extend({
 	},
 
 	getPos : function() {
-		return this.cPos.clone();
+		return this.cPos.Copy();
 	},
 
 	setPos : function(x, y) {
@@ -20,16 +22,14 @@ var Entity	= Class.extend({
 	},
 
 	getDim : function() {
-		return this.cDim.clone();
+		var cDim	= this.cHalfDim.Copy();
+		cDim.Multiply(2);
+		return cDim;
 	},
 
 	setDim : function(w, h) {
-		this.cDim.x	= w;
-		this.cDim.y	= h;
-	},
-
-	setAnim : function(cAnim) {
-		this.cAnim	= cAnim;
+		this.cHalfDim.x	= w / 2;
+		this.cHalfDim.y	= h / 2;
 	},
 
 	flagKilled : function() {
