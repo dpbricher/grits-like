@@ -19,12 +19,12 @@ var PhysicsManager	= Class.extend({
 	 *
 	 * cPos : Vec2 of x and y position
 	 * cDim : Vec2 of width and height
-	 * sType : "static" or "dynamic"
-	 * bIsBouncy : set to true for bouncy fixture
 	 *
 	 * Can also optionally define the following property:
 	 *
 	 * cUserData : this can be any desired data, and gets assigned to the created Body's userData property
+	 * sType 	 : "static" or "dynamic"
+	 * bIsBouncy : set to true for bouncy fixture
 	 *
 	 * Currently this function is pretty much just a copy of the udacity implementation...
 	 */

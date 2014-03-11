@@ -1,6 +1,7 @@
 var PhysicsTest	= Class.extend({
 	cPhysicsMan : null,
-	cTestEnt : null,
+	cTestEntA : null,
+	cTestEntB : null,
 
 	init : function() {
 		this.cPhysicsMan	= new PhysicsManager(
@@ -41,12 +42,14 @@ var PhysicsTest	= Class.extend({
 
 		var TestEnt	= Entity.extend({
 			cPhysBody : null,
-			cVel : new b2.Vec2(0, 0),
+			cVel : null,
 
 			sName : null,
 
 			init : function(sName) {
 				this.sName	= sName;
+
+				this.cVel	= new b2.Vec2(0, 0);
 			},
 
 			initPhysics : function(cPos, cDim) {
@@ -68,10 +71,11 @@ var PhysicsTest	= Class.extend({
 				this.cPos.x	= cPosNow.x;
 				this.cPos.y	= cPosNow.y;
 
+				//console.log(this.sName + " : cVel = " , this.cVel);
 				this.cPhysBody.SetLinearVelocity(this.cVel);
 
 				//console.log("update!");
-				console.log("this.cPos = " , this.cPos);
+				console.log(this.sName + " : cPos = " , this.cPos);
 
 				this._super();
 			}
@@ -80,15 +84,17 @@ var PhysicsTest	= Class.extend({
 		this.cTestEntA	= new TestEnt("A");
 		this.cTestEntA.initPhysics(new Vec2(0, 0), new Vec2(2.0, 2.0));
 		
-		var cTestEntB	= new TestEnt("B");
-		cTestEntB.initPhysics(new Vec2(3.0, 1.0), new Vec2(1.0, 1.0));
+		this.cTestEntB	= new TestEnt("B");
+		this.cTestEntB.initPhysics(new Vec2(5.0, 1.0), new Vec2(1.0, 1.0));
 
 		this.cTestEntA.cVel.x	= 60.0;
+		this.cTestEntB.cVel.x	= 0.0;
 	},
 
 	update : function() {
 		this.cPhysicsMan.update();
 
 		this.cTestEntA.update();
+		this.cTestEntB.update();
 	}
 });
