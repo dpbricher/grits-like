@@ -69,9 +69,9 @@ var SoundManagerTest	= Class.extend({
 		var iStartDelay	= 1000;
 
 		console.log("start triggered!");
-		this.cManager.loopSound(sName, iStartDelay / 1000);
 
-		// this.cManager.getSound(sName).cSource.onended	= Utils.bindFunc(console, console.log, "Sound ended!");
+		this.cManager.loopSound(sName, iStartDelay / 1000);
+		this.cManager.loopSound(sName, iStartDelay * 1.3 / 1000);
 
 		setTimeout(
 			Utils.bindFunc(this, function() {

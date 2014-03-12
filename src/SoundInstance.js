@@ -1,17 +1,13 @@
 /**
  * Represents the data required to play a single sound.
- * 
- * TODO : At the moment cSource only points to the last AudioBufferSourceNode
- * created by the "start" function, and there is no way to access any previous
- * buffers that might still be playing
  */
 var SoundInstance	= Class.extend({
 	cContext : null,
 	cBuffer : null,
 	cGain : null,
 
-	// the sound source currently playing
-	cSource : null,
+	// map of the sound sources currently playing
+	cSourceMap : {},
 
 	init : function(cBuffer, cContext) {
 		this.cBuffer		= cBuffer;
@@ -28,24 +24,30 @@ var SoundInstance	= Class.extend({
 
 	// AudioBufferSourceNode.start(when, offset, duration);
 	start : function(fDelay) {
-		this._initSource();
+		var cSource			= this._initSource();
+		var fContextTime	= this._getTimeFromDelay(fDelay);
 
-		this.cSource.connect(this.cGain);
-		this.cSource.start(
-			this._getTimeFromDelay(fDelay)
-		);
+		cSource.connect(this.cGain);
+		cSource.start(fContextTime);
+
+		this._addSourceRef(cSource, fContextTime);
+
+		return cSource;
 	},
 
 	// AudioBufferSourceNode.stop(when);
 	stop : function(fDelay) {
-		this.cSource.stop(
-			this._getTimeFromDelay(fDelay)
-		);
+		for (var sKey in this.cSourceMap)
+		{
+			this.cSourceMap[sKey].stop(
+				this._getTimeFromDelay(fDelay)
+			);
+		}
 	},
 
 	loop : function(fDelay) {
-		this.start(fDelay);
-		this.cSource.loop	= true;
+		var cSource		= this.start(fDelay);
+		cSource.loop	= true;
 	},
 
 	setVolume : function(fVolume) {
@@ -57,8 +59,10 @@ var SoundInstance	= Class.extend({
 	},
 
 	_initSource : function() {
-		this.cSource		= this.cContext.createBufferSource();
-		this.cSource.buffer	= this.cBuffer;
+		var cSource		= this.cContext.createBufferSource();
+		cSource.buffer	= this.cBuffer;
+
+		return cSource;
 	},
 
 	// returns the the AudioContext time fDelay seconds from now
@@ -69,5 +73,22 @@ var SoundInstance	= Class.extend({
 			fDelay	= this.cContext.currentTime + fDelay;
 
 		return fDelay;
+	},
+
+	/**
+	 * Store a reference to the passed source so that it can be stopped if desired
+	 */
+	_addSourceRef : function(cSource, fStartTime) {
+		// add onended callback to remove this sound from the map once it has finished
+		cSource.onended	= Utils.bindFunc(this, this._removeSourceRef, fStartTime);
+
+		this.cSourceMap[fStartTime.toString()]	= cSource;
+	},
+
+	/**
+	 * Remove a source reference from the map; Should only do this once the sound has finished
+	 */
+	_removeSourceRef : function(fStartTime) {
+		delete this.cSourceMap[fStartTime.toString()];
 	}
 });
