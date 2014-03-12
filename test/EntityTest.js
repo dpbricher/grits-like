@@ -15,6 +15,10 @@ var EntityTest	= Class.extend({
 		var cTestEnt	= Entity.extend({
 			cTestProp : "TEST!",
 
+			init : function(sMsg) {
+				console.log("Test class inited with message:\n" + sMsg);
+			},
+
 			update : function() {
 				console.log("updated!");
 				this.flagKilled();
@@ -24,8 +28,8 @@ var EntityTest	= Class.extend({
 		cFactory.setMapping("entity", Entity);
 		cFactory.setMapping("test-entity", cTestEnt);
 
-		var cEntA		= cFactory.getInstanceFromName("entity");
-		var cEntB		= cFactory.getInstanceFromName("test-entity");
+		var cEntA		= new (cFactory.getMapping("entity"))();
+		var cEntB		= new (cFactory.getMapping("test-entity"))("Init test msg");
 
 		console.log("cEntA = " , cEntA);
 		console.log("cEntB = " , cEntB);

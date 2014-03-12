@@ -1,6 +1,5 @@
 var Main	= Class.extend({
 	init : function() {
-		// new SoundLoaderTest();
-		new SoundManagerTest();
+		new EntityTest();
 	}
 });

@@ -11,9 +11,5 @@ var EntityFactory	= Class.extend({
 
 	getMapping : function(sName) {
 		return this.cClassMap[sName];
-	},
-
-	getInstanceFromName : function(sName) {
-		return new (this.getMapping(sName))();
 	}
 });
