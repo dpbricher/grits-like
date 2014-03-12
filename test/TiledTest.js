@@ -22,33 +22,18 @@ var TiledTest	= Class.extend({
 	},
 
 	onAssetsLoaded : function() {
-		var cScale	= new Vec2(0.1, 0.1);
+		var cScale			= new Vec2(0.1, 0.1);
 
-		this.cStage.width	= this.cTiledParser.cTileDim.x * this.cTiledParser.cTileRC.x * cScale.x;
-		this.cStage.height	= this.cTiledParser.cTileDim.y * this.cTiledParser.cTileRC.y * cScale.y;
+		var cCachedRenderer	= new CachedTiledRenderer(this.cStage);
+		cCachedRenderer.cacheImage(this.cTiledParser, this.cAtlasImage);
+
+		var cMapDim			= cCachedRenderer.getDim();
+
+		this.cStage.width	= cMapDim.x * cScale.x;
+		this.cStage.height	= cMapDim.y * cScale.y;
 		this.cStage.style.backgroundColor	= "red";
 
-		var cRenderer		= new TiledRenderer(this.cStage, this.cAtlasImage);
-
-		// draw map
-		for (var i = this.cTiledParser.cTileRC.x - 1; i >= 0; --i)
-		{
-			for (var j = this.cTiledParser.cTileRC.y - 1; j >= 0; --j)
-			{
-				var aData	= this.cTiledParser.getTileDataAt(i, j);
-
-				for (var k = 0; k < aData.length; ++k)
-				{
-					cRenderer.draw(
-						aData[k],
-						i * this.cTiledParser.cTileDim.x * cScale.x,
-						j * this.cTiledParser.cTileDim.y * cScale.y,
-						cScale.x,
-						cScale.y
-					);
-				}
-			}
-		}
+		cCachedRenderer.draw(new Rect(0, 0, cMapDim.x, cMapDim.y), 0, 0, cScale.x, cScale.y);
 
 		// draw collision areas
 		var ctx				= this.cStage.getContext("2d");

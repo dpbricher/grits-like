@@ -102,6 +102,16 @@ var TiledParser	= Class.extend({
 		);
 	},
 
+	/**
+	 * Returns the full dimensions of the current tile set
+	 */
+	getDim : function () {
+		return new b2.Vec2(
+			this.cTileRC.x * this.cTileDim.x,
+			this.cTileRC.y * this.cTileDim.y
+		);
+	},
+
 	getCurrentSet : function() {
 		return this.aTileSets[this.iCurrentSet];
 	},

@@ -9,10 +9,6 @@ var Renderer	= Class.extend({
 		this.cImage	= cImageRef;
 	},
 
-	draw : function(cData, x, y, scaleX, scaleY) {
-		if (scaleX == null) scaleX	= 1.0;
-		if (scaleY == null) scaleY	= 1.0;
-
-		this.cCtx.drawImage(this.cImage, cData.x, cData.y, cData.w, cData.h, x, y, cData.w * scaleX, cData.h * scaleY);
+	draw : function() {
 	}
 });
