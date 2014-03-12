@@ -1,8 +1,11 @@
 var Utils	= {
-	cAudioContext : null,
+	getAudioContextClass : function() {
+		var audioContext	= window.webkitAudioContext || window.AudioContext;
 
-	getAudioContext : function() {
-		return this.cAudioContext;
+		if (audioContext == null)
+			console.warn("This browser does not implement the AudioContext API");
+
+		return audioContext;
 	},
 
 	bindFunc : function(cScope, zFunction) {
@@ -19,9 +22,3 @@ var Utils	= {
 		return Math.min(Math.max(0.0, fValue), fMax);
 	}
 };
-
-(function() {
-	var audioContext	= window.AudioContext || window.webkitAudioContext;
-	
-	Utils.cAudioContext	= new audioContext();
-})();

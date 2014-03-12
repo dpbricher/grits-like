@@ -13,10 +13,10 @@ var SoundInstance	= Class.extend({
 	// the sound source currently playing
 	cSource : null,
 
-	init : function(cBuffer) {
+	init : function(cBuffer, cContext) {
 		this.cBuffer		= cBuffer;
 
-		this.cContext		= Utils.getAudioContext();
+		this.cContext		= cContext;
 		this.cGain			= this.cContext.createGain(0);
 		
 		this.setVolume(1.0);

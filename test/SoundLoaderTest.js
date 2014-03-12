@@ -1,24 +1,24 @@
 var SoundLoaderTest	= Class.extend({
+	cAudioContext : null,
+
 	cLoader : null,
 
 	init : function() {
-		var cThis		= this;
+		this.cAudioContext	= new (Utils.getAudioContextClass())();
 
-		this.cLoader	= new SoundLoader(new Loader());
+		this.cLoader		= new SoundLoader(new Loader(), this.cAudioContext);
 		this.cLoader.loadSounds(
 			[
 				"sounds/bounce0.ogg",
 				"sounds/energy_pickup.ogg",
 				"sounds/explode0.ogg"
 			],
-			function() {
-				cThis.testSounds();
-			}
+			Utils.bindFunc(this, this.testSounds)
 		);
 	},
 
 	testSounds : function() {
-		var context		= Utils.getAudioContext();
+		var context		= this.cAudioContext;
 
 		var fOffset		= 0.0;
 

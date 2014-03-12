@@ -5,7 +5,8 @@ var SoundManagerTest	= Class.extend({
 
 	init : function() {
 		this.cLoader	= new SoundLoader(
-			new Loader()
+			new Loader(),
+			new (Utils.getAudioContextClass())()
 		);
 
 		this.cManager	= new SoundManager(this.cLoader);

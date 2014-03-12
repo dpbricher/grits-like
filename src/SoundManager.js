@@ -9,7 +9,7 @@ var SoundManager	= Class.extend({
 	cInstanceMap : {},
 
 	init : function(cSoundLoader) {
-		this.cContext		= Utils.getAudioContext();
+		this.cContext		= cSoundLoader.getAudioContext();
 
 		this.cGlobalGain	= this.cContext.createGain(0);
 		this.cMuteGain		= this.cContext.createGain(0);
@@ -19,7 +19,7 @@ var SoundManager	= Class.extend({
 	},
 
 	createSound : function(sName, cSoundData) {
-		var cSound					= new SoundInstance(cSoundData);
+		var cSound					= new SoundInstance(cSoundData, this.cContext);
 
 		this.cInstanceMap[sName]	= cSound;
 		this._connectSound(cSound);

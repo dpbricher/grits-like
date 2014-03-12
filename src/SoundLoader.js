@@ -2,9 +2,13 @@ var SoundLoader	= Class.extend({
 	cLoader : null,
 	cSoundMap : null,
 
-	init : function(cLoaderRef) {
-		this.cSoundMap	= {};
-		this.cLoader	= cLoaderRef;
+	cAudioContext : null,
+
+	init : function(cLoaderRef, cAudioContext) {
+		this.cLoader		= cLoaderRef;
+		this.cAudioContext	= cAudioContext;
+
+		this.cSoundMap		= {};
 	},
 
 	loadSounds : function(aFileList, zCallback) {
@@ -13,6 +17,10 @@ var SoundLoader	= Class.extend({
 		this.cLoader.startQueue(
 			Utils.bindFunc(this, this._decodeSounds, zCallback)
 		);
+	},
+
+	getAudioContext : function() {
+		return this.cAudioContext;
 	},
 
 	getSoundData : function(sName) {
@@ -44,18 +52,16 @@ var SoundLoader	= Class.extend({
 
 		var zMakeErrCallback	= function(sName) {
 			return function() {
-				console.log("Failed to decode audio data for " + sName);
+				console.warn("Failed to decode audio data for " + sName);
 				zOnSoundDecoded(sName, null);
 			};
 		};
-
-		var context	= Utils.getAudioContext();
 
 		for (var sName in cDataList)
 		{
 			++iDataCount;
 
-			context.decodeAudioData(
+			this.cAudioContext.decodeAudioData(
 				cDataList[sName],
 				zMakeSuccCallback(sName),
 				zMakeErrCallback(sName)
