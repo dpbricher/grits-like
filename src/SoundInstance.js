@@ -1,5 +1,9 @@
 /**
  * Represents the data required to play a single sound.
+ *
+ * TODO : We can't currently have the same sound playing more than once at the exact same time.
+ * Sadly however there are valid situations for this occurring (e.g. 2 explosions that happen to be perfectly synchronised).
+ * So should look at a way to accommodate this at some point.
  */
 var SoundInstance	= Class.extend({
 	cContext : null,
@@ -24,13 +28,26 @@ var SoundInstance	= Class.extend({
 
 	// AudioBufferSourceNode.start(when, offset, duration);
 	start : function(fDelay) {
-		var cSource			= this._initSource();
 		var fContextTime	= this._getTimeFromDelay(fDelay);
 
-		cSource.connect(this.cGain);
-		cSource.start(fContextTime);
+		/**
+		 * If we already have this sound playing at the specified time then we don't need it again
+		 * Plus our source map uses start times as keys, so in that situation we'd lose a ref to one of them :s
+		 *
+		 * Therefore before creating our source check if one at that exact time already exists,
+		 * and do not create another if it does
+		 */
+		var cSource	= this.cSourceMap[fContextTime];
+		
+		if (cSource == null)
+		{
+			cSource	= this._initSource();
 
-		this._addSourceRef(cSource, fContextTime);
+			cSource.connect(this.cGain);
+			cSource.start(fContextTime);
+
+			this._addSourceRef(cSource, fContextTime);
+		}
 
 		return cSource;
 	},
@@ -69,10 +86,8 @@ var SoundInstance	= Class.extend({
 	_getTimeFromDelay : function(fDelay) {
 		if (fDelay == null || fDelay <= 0.0)
 			fDelay	= 0.0;
-		else
-			fDelay	= this.cContext.currentTime + fDelay;
 
-		return fDelay;
+		return this.cContext.currentTime + fDelay;
 	},
 
 	/**
