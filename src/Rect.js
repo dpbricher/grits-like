@@ -25,6 +25,11 @@ var Rect	= Class.extend({
 		);
 	},
 
+	offset : function(x, y) {
+		this.x	+= x;
+		this.y	+= y;
+	},
+
 	clone : function() {
 		return new Rect(this.x, this.y, this.w, this.h);
 	}
