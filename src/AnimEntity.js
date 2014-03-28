@@ -1,4 +1,4 @@
-var AnimEntity	= Entity.extend({
+var AnimEntity	= PhysicsEntity.extend({
 	cAnimState : null,
 
 	setAnim : function(cAnim) {

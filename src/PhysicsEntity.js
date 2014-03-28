@@ -1,4 +1,4 @@
-var PhysicsEntity	= AnimEntity.extend({
+var PhysicsEntity	= Entity.extend({
 	cPhysicsBody : null,
 
 	cVel : null,

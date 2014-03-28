@@ -32,7 +32,7 @@ var GameTest1	= Class.extend({
 		this.cStage			= document.getElementById("stage");
 		// arbitrary width and height
 		this.cStage.width	=
-		this.cStage.height	= 512;
+		this.cStage.height	= 256;
 
 		// first define all managers that have no prerequisites
 		this.cLoader			= new Loader();
@@ -78,10 +78,13 @@ var GameTest1	= Class.extend({
 		this.cSoundLoader	= new SoundLoader(this.cLoader, new (Utils.getAudioContextClass())());
 
 		// start loading
-		this.cSoundLoader.loadSounds(
+		/*this.cSoundLoader.loadSounds(
 			["sounds/" + SoundNames.BG_GAME],
 			Utils.bindFunc(this, this.onSoundsLoaded)
-		);
+		);*/
+
+		// skipping sound loading for dev
+		this.onSoundsLoaded();
 	},
 
 	onSoundsLoaded : function() {
@@ -99,25 +102,25 @@ var GameTest1	= Class.extend({
 		this.cSoundManager.createSoundList(this.cSoundLoader.cSoundMap);
 
 		// start BG music
-		this.cSoundManager.getSound(SoundNames.BG_GAME).setVolume(0.1);
-		this.cSoundManager.loopSound(SoundNames.BG_GAME, 0);
+		// this.cSoundManager.getSound(SoundNames.BG_GAME).setVolume(0.1);
+		// this.cSoundManager.loopSound(SoundNames.BG_GAME, 0);
 
 		// init player
-		this.cPlayer	= new PhysicsEntity(
+		this.cPlayer	= new PlayerEntity(
 			this.cPhysicsManager.addBody({
 				cPos : new b2.Vec2(this.cStage.width / 2, this.cStage.height / 2),
 				cDim : new b2.Vec2(50.0, 50.0)
 			})
 		);
 
-		this.cPlayer.setAnim(
-			new AnimState(
-				new AnimInfo(
-					Object.keys(this.cAtlasParser.cImageMap),
-					SequenceNames.WALK_UP
-				)
+		this.cPlayer.initLegAnim(
+			new AnimInfo(
+				Object.keys(this.cAtlasParser.cImageMap),
+				SequenceNames.WALK_UP
 			)
 		);
+
+		this.cPlayer.setTurretName(ImageNames.TURRET);
 
 		this.createWalls();
 
@@ -159,7 +162,7 @@ var GameTest1	= Class.extend({
 			})
 		);
 
-		aWallList	= [cLeft, cRight, cTop, cBottom];
+		this.aWallList	= [cLeft, cRight, cTop, cBottom];
 	},
 
 	updateInput : function() {
@@ -174,8 +177,7 @@ var GameTest1	= Class.extend({
 
 		cMoveVec.Normalize();
 
-		// this doesn't seem to be able to speed up movement more than a little...?
-		cMoveVec.Multiply(60.0 * 4);
+		cMoveVec.Multiply(60.0 * 5);
 
 		this.cPlayer.setVelocity(cMoveVec.x, cMoveVec.y);
 	},
@@ -184,7 +186,7 @@ var GameTest1	= Class.extend({
 		this.cPlayer.update();
 
 		if (this.cPlayer.getVelocity().Length() != 0)
-			this.cPlayer.getAnim().stepFrames(1);
+			this.cPlayer.getLegAnim().stepFrames(1);
 	},
 
 	render : function() {
@@ -192,20 +194,37 @@ var GameTest1	= Class.extend({
 		this.cStage.width	= this.cStage.width;
 
 		// draw player
+
+		// legs
+		var cCtx	= this.cStage.getContext("2d");
+
+		var cPos	= this.cPlayer.getPos();
+		var fRot	= this.cPlayer.getLegRot() * Math.PI / 180.0;
+
+		cCtx.translate(cPos.x, cPos.y);
+		cCtx.rotate(fRot);
+
 		this.cAtlasRenderer.draw(
 			this.cAtlasParser.getImageData(
-				this.cPlayer.getAnim().getCurrentName()
-			),
-			this.cPlayer.getPos().x,
-			this.cPlayer.getPos().y
+				this.cPlayer.getLegAnim().getCurrentName()
+			)
 		);
 
-		// draw player body
+		cCtx.setTransform(1, 0, 0, 1, 0, 0);
+		
+		// body
+		fRot		= this.cPlayer.getTurretRot() * Math.PI / 180.0;
+
+		cCtx.translate(cPos.x, cPos.y);
+		cCtx.rotate(fRot);
+
 		this.cAtlasRenderer.draw(
-			this.cAtlasParser.getImageData(ImageNames.TURRET),
-			this.cPlayer.getPos().x,
-			this.cPlayer.getPos().y
+			this.cAtlasParser.getImageData(
+				this.cPlayer.getTurretName()
+			)
 		);
+
+		cCtx.setTransform(1, 0, 0, 1, 0, 0);
 
 		var cArea;
 		var ctx	= this.cStage.getContext("2d");
@@ -220,7 +239,7 @@ var GameTest1	= Class.extend({
 		ctx.closePath();
 
 		// draw walls
-		aWallList.forEach(function(cItem) {
+		this.aWallList.forEach(function(cItem) {
 			cArea	= new Rect(cItem.getPos().x, cItem.getPos().y, cItem.getDim().x, cItem.getDim().y);			
 			cArea.offset(-cItem.getDim().x / 2, -cItem.getDim().y / 2);
 
@@ -242,6 +261,6 @@ var GameTest1	= Class.extend({
 		this.render();
 
 		// create next update handle here
-		cUpdateHandle	= this.zRafFunc.call(null, Utils.bindFunc(this, this.update));
+		this.cUpdateHandle	= this.zRafFunc.call(null, Utils.bindFunc(this, this.update));
 	}
 });
