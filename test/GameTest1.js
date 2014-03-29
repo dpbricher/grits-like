@@ -9,6 +9,7 @@ var GameTest1	= Class.extend({
 	cAtlasRenderer : null,
 
 	// cEntityManager : null,
+	aProjList : [],
 	aWallList : null,
 
 	cInputManager : null,
@@ -44,6 +45,10 @@ var GameTest1	= Class.extend({
 			new MouseManager(this.cStage)
 		);
 		this.cPhysicsManager	= new PhysicsManager(new b2.Vec2(0, 0), false);
+
+		this.cPhysicsManager.addContactListener({
+			PostSolve : this.onContact
+		});
 
 		// add key bindings
 		this.cInputManager.bindAction(KeyCodes.W, Actions.MOVE_UP);
@@ -131,7 +136,7 @@ var GameTest1	= Class.extend({
 			Object.keys(this.cAtlasParser.cImageMap),
 			SequenceNames.MACHGUN_PROJECTILE
 		);
-		var cMachGun	= new WeaponInfo("machgun", cProjAnim, 60.0 * 20, 1.0, 200 * 5);
+		var cMachGun	= new WeaponInfo(cProjAnim, "machgun", 60.0 * 20, 1.0, 200);
 
 		this.cPlayer.setWeaponState(
 			new WeaponState(cMachGun)
@@ -223,7 +228,41 @@ var GameTest1	= Class.extend({
 
 		if (this.cPlayer.getFireVec().LengthSquared() > 0)
 			if (this.cPlayer.getWeaponState().tryFire())
-				console.log("Boom!");
+			{
+				// create projectile outside of owner's bounds, otherwise it will hit them...
+				// should look at improving this later.
+				var cPos	= this.cPlayer.getPos();
+				var cOffset	= this.cPlayer.getFireVec();
+
+				cOffset.Multiply(this.cPlayer.getDim().x + 3.0);
+				cPos.Add(cOffset);
+
+				var cProj	= new Projectile(
+					this.cPhysicsManager.addBody({
+						cPos : cPos,
+						cDim : new b2.Vec2(2.0, 2.0)
+					}),
+					new AnimState(
+						this.cPlayer.getWeaponState().getInfo().getAnimInfo()
+					),
+					this.cPlayer,
+					0.0
+				);
+
+				cProj.getPhysicsBody().SetBullet(true);
+				cProj.getPhysicsBody().SetAngle(this.cPlayer.getTurretRot());
+
+				cProj.setOnContact(function(cOtherEnt) {
+					this.flagKilled();
+				});
+
+				var cVel	= this.cPlayer.getFireVec();
+				cVel.Multiply(this.cPlayer.getWeaponState().getInfo().getProjSpeed());
+
+				cProj.setVelocity(cVel.x, cVel.y);
+
+				this.aProjList.push(cProj);
+			}
 	},
 
 	render : function() {
@@ -263,28 +302,63 @@ var GameTest1	= Class.extend({
 
 		cCtx.setTransform(1, 0, 0, 1, 0, 0);
 
+		// draw projectiles
+		var cProj;
+
+		for (var i in this.aProjList)
+		{
+			cProj	= this.aProjList[i];
+
+			cCtx.translate(cProj.getPos().x, cProj.getPos().y);
+			cCtx.rotate(cProj.getPhysicsBody().GetAngle() + Math.PI);
+
+			this.cAtlasRenderer.draw(
+				this.cAtlasParser.getImageData(
+					cProj.getAnim().getCurrentName()
+				)
+			);
+
+			cCtx.setTransform(1, 0, 0, 1, 0, 0);
+		}
+
 		var cArea;
-		var ctx	= this.cStage.getContext("2d");
 
 		// draw player hit rect
 		cArea	= new Rect(this.cPlayer.getPos().x, this.cPlayer.getPos().y, this.cPlayer.getDim().x, this.cPlayer.getDim().y);
 		cArea.offset(-this.cPlayer.getDim().x / 2, -this.cPlayer.getDim().y / 2);
 
-		ctx.beginPath();
-		ctx.strokeStyle	= "green";
-		ctx.strokeRect(cArea.x, cArea.y, cArea.w, cArea.h);
-		ctx.closePath();
+		cCtx.translate(cArea.midPoint().x, cArea.midPoint().y);
+		cCtx.rotate(this.cPlayer.getLegRot());
+
+		cCtx.beginPath();
+		cCtx.strokeStyle	= "green";
+		cCtx.strokeRect(-cArea.w / 2, -cArea.h / 2, cArea.w, cArea.h);
+		cCtx.closePath();
+
+		cCtx.setTransform(1, 0, 0, 1, 0, 0);
 
 		// draw walls
 		this.aWallList.forEach(function(cItem) {
 			cArea	= new Rect(cItem.getPos().x, cItem.getPos().y, cItem.getDim().x, cItem.getDim().y);			
 			cArea.offset(-cItem.getDim().x / 2, -cItem.getDim().y / 2);
 
-			ctx.beginPath();
-			ctx.fillStyle	= "red";
-			ctx.fillRect(cArea.x, cArea.y, cArea.w, cArea.h);
-			ctx.closePath();
+			cCtx.beginPath();
+			cCtx.fillStyle	= "red";
+			cCtx.fillRect(cArea.x, cArea.y, cArea.w, cArea.h);
+			cCtx.closePath();
 		});
+	},
+
+	onContact : function(cBodyA, cBodyB, aImpulses) {
+		// console.log("cBodyA = " , cBodyA);
+		// console.log("cBodyB = " , cBodyB);
+		// console.log("aImpulses = " , aImpulses);
+
+		var cEntA	= cBodyA.GetUserData();
+		var cEntB	= cBodyB.GetUserData();
+
+		cEntA.onContact(cEntB);
+		cEntB.onContact(cEntA);
 	},
 
 	update : function() {
@@ -296,6 +370,24 @@ var GameTest1	= Class.extend({
 		this.cPhysicsManager.update();
 
 		this.updatePlayer(iTime);
+
+		this.aProjList.forEach(function(cItem) {
+			cItem.update();
+		});
+
+		for (var i = this.aProjList.length - 1; i >= 0; --i)
+		{
+			if (this.aProjList[i].getIsKilled())
+			{
+				// console.log("Die!!!");
+
+				this.cPhysicsManager.removeBody(
+					this.aProjList[i].getPhysicsBody()
+				);
+				this.aProjList.splice(i, 1);
+			}
+		}
+
 		this.render();
 
 		this.iLastUpdate	= iTimeNow;

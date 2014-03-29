@@ -1,7 +1,7 @@
 var WeaponInfo	= Class.extend({
-	sName : null,
+	cAnimInfo : null,
 
-	sAnimInfo : null,
+	sName : null,
 
 	// Speed and damage of each projectile
 	fProjSpeed : 0.0,
@@ -10,9 +10,9 @@ var WeaponInfo	= Class.extend({
 	// Forced firing delay between shots, in milliseconds
 	iFireDelay : 0,
 
-	init : function(sName, sAnimInfo, fProjSpeed, fProjDamage, iFireDelay) {
+	init : function(cAnimInfo, sName, fProjSpeed, fProjDamage, iFireDelay) {
+		this.cAnimInfo		= cAnimInfo;
 		this.sName			= sName;
-		this.sAnimInfo		= sAnimInfo;
 		this.fProjSpeed		= fProjSpeed;
 		this.fProjDamage	= fProjDamage;
 		this.iFireDelay		= iFireDelay;
@@ -20,5 +20,13 @@ var WeaponInfo	= Class.extend({
 
 	getFireDelay : function() {
 		return this.iFireDelay;
+	},
+
+	getAnimInfo : function() {
+		return this.cAnimInfo;
+	},
+
+	getProjSpeed : function() {
+		return this.fProjSpeed;
 	}
 });

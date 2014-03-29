@@ -50,12 +50,9 @@ var PhysicsManager	= Class.extend({
 
 		var cFixDef				= new b2.FixtureDef();
 
-		if(cEntityDef.bIsBouncy)
-		{
-            cFixDef.density 	= 1.0;
-            cFixDef.friction 	= 0.0;
-            cFixDef.restitution	= 1.0;
-        }
+        cFixDef.density 		= 1.0;
+        cFixDef.friction 		= 0.0;
+        cFixDef.restitution		= (cEntityDef.bIsBouncy) ? 1.0 : 0.0;
 
         cFixDef.shape			= new b2.PolygonShape();
         cFixDef.shape.SetAsBox(cEntityDef.cDim.x / 2, cEntityDef.cDim.y / 2);

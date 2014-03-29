@@ -3,6 +3,9 @@ var PhysicsEntity	= Entity.extend({
 
 	cVel : null,
 
+	// Use this for any custom contact response logic
+	zOnContact : function(){},
+
 	fMoveSpeed : 0.0,
 
 	init : function(cB2Body) {
@@ -31,6 +34,22 @@ var PhysicsEntity	= Entity.extend({
 
 	setMoveSpeed : function(fSpeed) {
 		this.fMoveSpeed	= fSpeed;
+	},
+
+	getPhysicsBody : function() {
+		return this.cPhysicsBody;
+	},
+
+	setOnContact : function(zContactFunc) {
+		this.zOnContact	= zContactFunc;
+	},
+
+	getOnContact : function() {
+		return this.zOnContact;
+	},
+
+	onContact : function(cOtherEnt) {
+		this.zOnContact(cOtherEnt);
 	},
 
 	update : function() {

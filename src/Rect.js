@@ -16,6 +16,10 @@ var Rect	= Class.extend({
 	right : function() { return this.x + this.w },
 	bottom : function() { return this.y + this.h },
 
+	midPoint : function() {
+		return new Vec2(this.x + this.w / 2, this.y + this.h / 2)
+	},
+
 	contains : function(x, y) {
 		return !(
 			this.left() > x ||

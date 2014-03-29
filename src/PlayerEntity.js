@@ -75,7 +75,10 @@ var PlayerEntity	= PhysicsEntity.extend({
 
 		// Update leg rotation if player is moving
 		if (this.cVel.LengthSquared() > 0)
+		{
 			this.fLegRot	= Math.atan2(this.cVel.y, this.cVel.x);
+			this.cPhysicsBody.SetAngle(this.fLegRot);
+		}
 
 		// Update turrent rot if player is attempting to fire
 		if (this.cFireVec.LengthSquared() > 0)
