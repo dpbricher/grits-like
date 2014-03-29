@@ -24,6 +24,8 @@ var GameTest1	= Class.extend({
 
 	zRafFunc : null,
 
+	iLastUpdate : 0,
+
 	init : function() {
 		// get game update function
 		this.zRafFunc		= Utils.getRafFunc();
@@ -48,6 +50,11 @@ var GameTest1	= Class.extend({
 		this.cInputManager.bindAction(KeyCodes.A, Actions.MOVE_LEFT);
 		this.cInputManager.bindAction(KeyCodes.S, Actions.MOVE_DOWN);
 		this.cInputManager.bindAction(KeyCodes.D, Actions.MOVE_RIGHT);
+		
+		this.cInputManager.bindAction(KeyCodes.ARROW_UP, Actions.FIRE_UP);
+		this.cInputManager.bindAction(KeyCodes.ARROW_LEFT, Actions.FIRE_LEFT);
+		this.cInputManager.bindAction(KeyCodes.ARROW_DOWN, Actions.FIRE_DOWN);
+		this.cInputManager.bindAction(KeyCodes.ARROW_RIGHT, Actions.FIRE_RIGHT);
 
 		// first load data files that tell us where other assets can be found
 		this.cLoader.queue("data/" + this.IMAGE_JSON_NAME);
@@ -116,14 +123,28 @@ var GameTest1	= Class.extend({
 		this.cPlayer.initLegAnim(
 			new AnimInfo(
 				Object.keys(this.cAtlasParser.cImageMap),
-				SequenceNames.WALK_UP
+				SequenceNames.WALK_RIGHT
 			)
 		);
 
+		var cProjAnim	= new AnimInfo(
+			Object.keys(this.cAtlasParser.cImageMap),
+			SequenceNames.MACHGUN_PROJECTILE
+		);
+		var cMachGun	= new WeaponInfo("machgun", cProjAnim, 60.0 * 20, 1.0, 200 * 5);
+
+		this.cPlayer.setWeaponState(
+			new WeaponState(cMachGun)
+		);
+		this.cPlayer.getWeaponState().setAmmoLeft(10);
+
 		this.cPlayer.setTurretName(ImageNames.TURRET);
+		this.cPlayer.setMoveSpeed(60.0 * 5);
 
 		this.createWalls();
 
+		// start update loop
+		this.iLastUpdate	= Date.now();
 		this.update();
 	},
 
@@ -168,6 +189,7 @@ var GameTest1	= Class.extend({
 	updateInput : function() {
 		var cActionMap	= this.cInputManager.getLiveActions();
 
+		// movement
 		var cMoveVec	= new b2.Vec2(0, 0);
 
 		if (cActionMap[Actions.MOVE_UP])	cMoveVec.y	-= 1.0;
@@ -176,17 +198,32 @@ var GameTest1	= Class.extend({
 		if (cActionMap[Actions.MOVE_RIGHT])	cMoveVec.x	+= 1.0;
 
 		cMoveVec.Normalize();
-
-		cMoveVec.Multiply(60.0 * 5);
+		cMoveVec.Multiply(this.cPlayer.getMoveSpeed());
 
 		this.cPlayer.setVelocity(cMoveVec.x, cMoveVec.y);
+
+		// firing
+		var cFireVec	= new b2.Vec2(0, 0);
+
+		if (cActionMap[Actions.FIRE_UP])	cFireVec.y	-= 1.0;
+		if (cActionMap[Actions.FIRE_DOWN]) 	cFireVec.y	+= 1.0;
+		if (cActionMap[Actions.FIRE_LEFT]) 	cFireVec.x	-= 1.0;
+		if (cActionMap[Actions.FIRE_RIGHT])	cFireVec.x	+= 1.0;
+
+		cFireVec.Normalize();
+
+		this.cPlayer.setFireVec(cFireVec.x, cFireVec.y);
 	},
 
-	updatePlayer : function() {
-		this.cPlayer.update();
+	updatePlayer : function(iTime) {
+		this.cPlayer.update(iTime);
 
-		if (this.cPlayer.getVelocity().Length() != 0)
+		if (this.cPlayer.getVelocity().LengthSquared() > 0)
 			this.cPlayer.getLegAnim().stepFrames(1);
+
+		if (this.cPlayer.getFireVec().LengthSquared() > 0)
+			if (this.cPlayer.getWeaponState().tryFire())
+				console.log("Boom!");
 	},
 
 	render : function() {
@@ -199,7 +236,7 @@ var GameTest1	= Class.extend({
 		var cCtx	= this.cStage.getContext("2d");
 
 		var cPos	= this.cPlayer.getPos();
-		var fRot	= this.cPlayer.getLegRot() * Math.PI / 180.0;
+		var fRot	= this.cPlayer.getLegRot();
 
 		cCtx.translate(cPos.x, cPos.y);
 		cCtx.rotate(fRot);
@@ -213,7 +250,7 @@ var GameTest1	= Class.extend({
 		cCtx.setTransform(1, 0, 0, 1, 0, 0);
 		
 		// body
-		fRot		= this.cPlayer.getTurretRot() * Math.PI / 180.0;
+		fRot		= this.cPlayer.getTurretRot();
 
 		cCtx.translate(cPos.x, cPos.y);
 		cCtx.rotate(fRot);
@@ -252,13 +289,16 @@ var GameTest1	= Class.extend({
 
 	update : function() {
 		// update logic here
-		// console.log("update!");
+		var iTimeNow	= Date.now();
+		var iTime		= iTimeNow - this.iLastUpdate;
 
 		this.updateInput();
 		this.cPhysicsManager.update();
 
-		this.updatePlayer();
+		this.updatePlayer(iTime);
 		this.render();
+
+		this.iLastUpdate	= iTimeNow;
 
 		// create next update handle here
 		this.cUpdateHandle	= this.zRafFunc.call(null, Utils.bindFunc(this, this.update));

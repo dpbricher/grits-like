@@ -3,6 +3,8 @@ var PhysicsEntity	= Entity.extend({
 
 	cVel : null,
 
+	fMoveSpeed : 0.0,
+
 	init : function(cB2Body) {
 		this.cPhysicsBody	= cB2Body;
 
@@ -21,6 +23,14 @@ var PhysicsEntity	= Entity.extend({
 
 	setVelocity : function(x, y) {
 		this.cVel.Set(x, y);
+	},
+
+	getMoveSpeed : function() {
+		return this.fMoveSpeed;
+	},
+
+	setMoveSpeed : function(fSpeed) {
+		this.fMoveSpeed	= fSpeed;
 	},
 
 	update : function() {
