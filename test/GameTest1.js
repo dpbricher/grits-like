@@ -26,6 +26,8 @@ var GameTest1	= Class.extend({
 	cMapBounds : null,
 	cViewRect : null,
 
+	cBgImage : null,
+
 	zRafFunc : null,
 
 	iLastUpdate : 0,
@@ -45,7 +47,18 @@ var GameTest1	= Class.extend({
 		this.cStage.height	= this.cViewRect.h;
 
 		// full map bounds
-		this.cMapBounds		= new Rect(0, 0, 300.0, 300.0);
+		this.cMapBounds		= new Rect(0, 0, 512.0, 512.0);
+
+		// create a background image
+		this.cBgImage			= document.createElement("canvas");
+		this.cBgImage.width		= this.cMapBounds.w;
+		this.cBgImage.height	= this.cMapBounds.h;
+
+		var cCtx				= this.cBgImage.getContext("2d");
+		cCtx.fillStyle		 	= cCtx.createLinearGradient(0, 0, this.cBgImage.width, this.cBgImage.height);
+		cCtx.fillStyle.addColorStop(0, "blue");
+		cCtx.fillStyle.addColorStop(1, "yellow");
+		cCtx.fillRect(0, 0, this.cBgImage.width, this.cBgImage.height);
 
 		// first define all managers that have no prerequisites
 		this.cLoader			= new Loader();
@@ -151,7 +164,7 @@ var GameTest1	= Class.extend({
 		this.cPlayer.setWeaponState(
 			new WeaponState(cMachGun)
 		);
-		this.cPlayer.getWeaponState().setAmmoLeft(10);
+		this.cPlayer.getWeaponState().setAmmoLeft(Number.POSITIVE_INFINITY);
 
 		this.cPlayer.setTurretName(ImageNames.TURRET);
 		this.cPlayer.setMoveSpeed(60.0 * 5);
@@ -309,10 +322,15 @@ var GameTest1	= Class.extend({
 
 		cViewRect.offset(cCorrection.x, cCorrection.y);
 
-		// define funtion that resets context position to the position of our viewing rect
+		// define a funtion that resets context position to the position of our viewing rect
 		var zResetContext	= function() {
 			cCtx.setTransform(1, 0, 0, 1, -cViewRect.x, -cViewRect.y);
 		};
+
+		// draw bg
+		cCtx.setTransform(1, 0, 0, 1, 0, 0);
+
+		cCtx.drawImage(this.cBgImage, cViewRect.x, cViewRect.y, cViewRect.w, cViewRect.h, 0, 0, cViewRect.w, cViewRect.h);
 
 		zResetContext();
 
