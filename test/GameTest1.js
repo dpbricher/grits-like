@@ -23,6 +23,9 @@ var GameTest1	= Class.extend({
 
 	cStage : null,
 
+	cMapBounds : null,
+	cViewRect : null,
+
 	zRafFunc : null,
 
 	iLastUpdate : 0,
@@ -33,9 +36,16 @@ var GameTest1	= Class.extend({
 
 		// init stage for this test
 		this.cStage			= document.getElementById("stage");
+
+		// view rect
+		this.cViewRect		= new Rect(0, 0, 256.0, 256.0);
+
 		// arbitrary width and height
-		this.cStage.width	=
-		this.cStage.height	= 256;
+		this.cStage.width	= this.cViewRect.w;
+		this.cStage.height	= this.cViewRect.h;
+
+		// full map bounds
+		this.cMapBounds		= new Rect(0, 0, 300.0, 300.0);
 
 		// first define all managers that have no prerequisites
 		this.cLoader			= new Loader();
@@ -158,32 +168,32 @@ var GameTest1	= Class.extend({
 
 		var cLeft	= new PhysicsEntity(
 			this.cPhysicsManager.addBody({
-				cPos : new b2.Vec2(0, this.cStage.height / 2),
-				cDim : new b2.Vec2(fThickness, this.cStage.height),
+				cPos : new b2.Vec2(this.cMapBounds.left(), this.cMapBounds.bottom() / 2),
+				cDim : new b2.Vec2(fThickness, this.cMapBounds.bottom()),
 				sType : "static"
 			})
 		);
 
 		var cRight	= new PhysicsEntity(
 			this.cPhysicsManager.addBody({
-				cPos : new b2.Vec2(this.cStage.width, this.cStage.height / 2),
-				cDim : new b2.Vec2(fThickness, this.cStage.height),
+				cPos : new b2.Vec2(this.cMapBounds.right(), this.cMapBounds.bottom() / 2),
+				cDim : new b2.Vec2(fThickness, this.cMapBounds.bottom()),
 				sType : "static"
 			})
 		);
 
 		var cTop	= new PhysicsEntity(
 			this.cPhysicsManager.addBody({
-				cPos : new b2.Vec2(this.cStage.width / 2, 0),
-				cDim : new b2.Vec2(this.cStage.width, fThickness),
+				cPos : new b2.Vec2(this.cMapBounds.right() / 2, this.cMapBounds.left()),
+				cDim : new b2.Vec2(this.cMapBounds.right(), fThickness),
 				sType : "static"
 			})
 		);
 
 		var cBottom	= new PhysicsEntity(
 			this.cPhysicsManager.addBody({
-				cPos : new b2.Vec2(this.cStage.width / 2, this.cStage.height),
-				cDim : new b2.Vec2(this.cStage.width, fThickness),
+				cPos : new b2.Vec2(this.cMapBounds.right() / 2, this.cMapBounds.bottom()),
+				cDim : new b2.Vec2(this.cMapBounds.right(), fThickness),
 				sType : "static"
 			})
 		);
@@ -268,11 +278,46 @@ var GameTest1	= Class.extend({
 	render : function() {
 		// clear stage
 		this.cStage.width	= this.cStage.width;
+		// get context
+		var cCtx			= this.cStage.getContext("2d");
+		var cViewRect		= this.cViewRect;
+
+		// update view rect position to centre on player
+		var cViewCentre		= new b2.Vec2(
+			cViewRect.midPoint().x,
+			cViewRect.midPoint().y
+		);
+		var cOffset			= this.cPlayer.getPos();
+		cOffset.Subtract(cViewCentre);
+
+		cViewRect.offset(cOffset.x, cOffset.y);
+		
+		// clamp view rect to map area
+		var cCorrection		= new b2.Vec2(0, 0);
+
+		if (cViewRect.left() < this.cMapBounds.left())
+			cCorrection.x	= this.cMapBounds.left() - cViewRect.left();
+		
+		if (cViewRect.right() > this.cMapBounds.right())
+			cCorrection.x	= this.cMapBounds.right() - cViewRect.right();
+		
+		if (cViewRect.top() < this.cMapBounds.top())
+			cCorrection.y	= this.cMapBounds.top() - cViewRect.top();
+		
+		if (cViewRect.bottom() > this.cMapBounds.bottom())
+			cCorrection.y	= this.cMapBounds.bottom() - cViewRect.bottom();
+
+		cViewRect.offset(cCorrection.x, cCorrection.y);
+
+		// define funtion that resets context position to the position of our viewing rect
+		var zResetContext	= function() {
+			cCtx.setTransform(1, 0, 0, 1, -cViewRect.x, -cViewRect.y);
+		};
+
+		zResetContext();
 
 		// draw player
-
 		// legs
-		var cCtx	= this.cStage.getContext("2d");
 
 		var cPos	= this.cPlayer.getPos();
 		var fRot	= this.cPlayer.getLegRot();
@@ -286,7 +331,7 @@ var GameTest1	= Class.extend({
 			)
 		);
 
-		cCtx.setTransform(1, 0, 0, 1, 0, 0);
+		zResetContext();
 		
 		// body
 		fRot		= this.cPlayer.getTurretRot();
@@ -300,7 +345,7 @@ var GameTest1	= Class.extend({
 			)
 		);
 
-		cCtx.setTransform(1, 0, 0, 1, 0, 0);
+		zResetContext();
 
 		// draw projectiles
 		var cProj;
@@ -318,7 +363,7 @@ var GameTest1	= Class.extend({
 				)
 			);
 
-			cCtx.setTransform(1, 0, 0, 1, 0, 0);
+			zResetContext();
 		}
 
 		var cArea;
@@ -335,7 +380,7 @@ var GameTest1	= Class.extend({
 		cCtx.strokeRect(-cArea.w / 2, -cArea.h / 2, cArea.w, cArea.h);
 		cCtx.closePath();
 
-		cCtx.setTransform(1, 0, 0, 1, 0, 0);
+		zResetContext();
 
 		// draw walls
 		this.aWallList.forEach(function(cItem) {
