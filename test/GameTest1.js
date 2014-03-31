@@ -113,13 +113,17 @@ var GameTest1	= Class.extend({
 		this.cSoundLoader	= new SoundLoader(this.cLoader, new (Utils.getAudioContextClass())());
 
 		// start loading
-		/*this.cSoundLoader.loadSounds(
-			["sounds/" + SoundNames.BG_GAME],
+		this.cSoundLoader.loadSounds(
+			// ["sounds/" + SoundNames.BG_GAME],
+			[
+				"sounds/" + SoundNames.MACH_GUN,
+				"sounds/" + SoundNames.GRENADE
+			],
 			Utils.bindFunc(this, this.onSoundsLoaded)
-		);*/
+		);
 
 		// skipping sound loading for dev
-		this.onSoundsLoaded();
+		// this.onSoundsLoaded();
 	},
 
 	onSoundsLoaded : function() {
@@ -252,6 +256,9 @@ var GameTest1	= Class.extend({
 		if (this.cPlayer.getFireVec().LengthSquared() > 0)
 			if (this.cPlayer.getWeaponState().tryFire())
 			{
+				// play bullet sound
+				this.cSoundManager.startSound(SoundNames.MACH_GUN, 0);
+
 				// create projectile outside of owner's bounds, otherwise it will hit them...
 				// should look at improving this later.
 				var cPos	= this.cPlayer.getPos();
@@ -275,9 +282,12 @@ var GameTest1	= Class.extend({
 				cProj.getPhysicsBody().SetBullet(true);
 				cProj.getPhysicsBody().SetAngle(this.cPlayer.getTurretRot());
 
-				cProj.setOnContact(function(cOtherEnt) {
-					this.flagKilled();
-				});
+				cProj.setOnContact(
+					Utils.bindFunc(this, function(cOtherEnt) {
+						cProj.flagKilled();
+						this.playSound(SoundNames.GRENADE, cProj.getPos());
+					})
+				);
 
 				var cVel	= this.cPlayer.getFireVec();
 				cVel.Multiply(this.cPlayer.getWeaponState().getInfo().getProjSpeed());
@@ -286,6 +296,24 @@ var GameTest1	= Class.extend({
 
 				this.aProjList.push(cProj);
 			}
+	},
+
+	playSound : function(sName, cPos) {
+		var fVol;
+		var fDist;
+		
+		// calculate distance from player to sound
+		cPos.Subtract(this.cPlayer.getPos());
+
+		fDist	= cPos.LengthSquared();
+
+		// calculate volume based on distance
+		var fMaxDist	= (this.cViewRect.w * this.cViewRect.w + this.cViewRect.h * this.cViewRect.h) * 1.5;
+		fVol			= 1.0 - (fDist / fMaxDist);
+
+		// play sound
+		this.cSoundManager.getSound(sName).setVolume(fVol);
+		this.cSoundManager.startSound(sName, 0);		
 	},
 
 	render : function() {
@@ -308,17 +336,10 @@ var GameTest1	= Class.extend({
 		// clamp view rect to map area
 		var cCorrection		= new b2.Vec2(0, 0);
 
-		if (cViewRect.left() < this.cMapBounds.left())
-			cCorrection.x	= this.cMapBounds.left() - cViewRect.left();
-		
-		if (cViewRect.right() > this.cMapBounds.right())
-			cCorrection.x	= this.cMapBounds.right() - cViewRect.right();
-		
-		if (cViewRect.top() < this.cMapBounds.top())
-			cCorrection.y	= this.cMapBounds.top() - cViewRect.top();
-		
-		if (cViewRect.bottom() > this.cMapBounds.bottom())
-			cCorrection.y	= this.cMapBounds.bottom() - cViewRect.bottom();
+		if (cViewRect.left() < this.cMapBounds.left())		cCorrection.x	= this.cMapBounds.left() - cViewRect.left();
+		if (cViewRect.right() > this.cMapBounds.right())	cCorrection.x	= this.cMapBounds.right() - cViewRect.right();
+		if (cViewRect.top() < this.cMapBounds.top())		cCorrection.y	= this.cMapBounds.top() - cViewRect.top();
+		if (cViewRect.bottom() > this.cMapBounds.bottom())	cCorrection.y	= this.cMapBounds.bottom() - cViewRect.bottom();
 
 		cViewRect.offset(cCorrection.x, cCorrection.y);
 
