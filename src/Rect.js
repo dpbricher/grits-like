@@ -34,6 +34,14 @@ var Rect	= Class.extend({
 		this.y	+= y;
 	},
 
+	scale : function(scaleX, scaleY) {
+		this.x	*= scaleX;
+		this.w	*= scaleX;
+
+		this.y	*= scaleY;
+		this.h	*= scaleY;
+	},
+
 	clone : function() {
 		return new Rect(this.x, this.y, this.w, this.h);
 	}

@@ -30,6 +30,12 @@ var GameTest1	= Class.extend({
 
 	zRafFunc : null,
 
+	/**
+	 * Amount to scale up all entity positions and dimensions by when rendering.
+	 * This is necessary because box2d requires units too be in meters/kilograms/seconds
+	 */
+	fGlobalScale : 10.0,
+
 	iLastUpdate : 0,
 
 	init : function() {
@@ -40,19 +46,19 @@ var GameTest1	= Class.extend({
 		this.cStage			= document.getElementById("stage");
 
 		// view rect
-		this.cViewRect		= new Rect(0, 0, 256.0, 256.0);
+		this.cViewRect		= new Rect(0, 0, 25.6, 25.6);
 
 		// arbitrary width and height
-		this.cStage.width	= this.cViewRect.w;
-		this.cStage.height	= this.cViewRect.h;
+		this.cStage.width	= this.cViewRect.w * this.fGlobalScale;
+		this.cStage.height	= this.cViewRect.h * this.fGlobalScale;
 
 		// full map bounds
-		this.cMapBounds		= new Rect(0, 0, 512.0, 512.0);
+		this.cMapBounds		= new Rect(0, 0, 51.2, 51.2);
 
 		// create a background image
 		this.cBgImage			= document.createElement("canvas");
-		this.cBgImage.width		= this.cMapBounds.w;
-		this.cBgImage.height	= this.cMapBounds.h;
+		this.cBgImage.width		= this.cMapBounds.w * this.fGlobalScale;
+		this.cBgImage.height	= this.cMapBounds.h * this.fGlobalScale;
 
 		var cCtx				= this.cBgImage.getContext("2d");
 		cCtx.fillStyle		 	= cCtx.createLinearGradient(0, 0, this.cBgImage.width, this.cBgImage.height);
@@ -114,16 +120,13 @@ var GameTest1	= Class.extend({
 
 		// start loading
 		this.cSoundLoader.loadSounds(
-			// ["sounds/" + SoundNames.BG_GAME],
 			[
+				// "sounds/" + SoundNames.BG_GAME,
 				"sounds/" + SoundNames.MACH_GUN,
 				"sounds/" + SoundNames.GRENADE
 			],
 			Utils.bindFunc(this, this.onSoundsLoaded)
 		);
-
-		// skipping sound loading for dev
-		// this.onSoundsLoaded();
 	},
 
 	onSoundsLoaded : function() {
@@ -147,8 +150,8 @@ var GameTest1	= Class.extend({
 		// init player
 		this.cPlayer	= new PlayerEntity(
 			this.cPhysicsManager.addBody({
-				cPos : new b2.Vec2(this.cStage.width / 2, this.cStage.height / 2),
-				cDim : new b2.Vec2(50.0, 50.0)
+				cPos : new b2.Vec2(this.cMapBounds.w / 4, this.cMapBounds.h / 4),
+				cDim : new b2.Vec2(5.0, 5.0)
 			})
 		);
 
@@ -163,7 +166,7 @@ var GameTest1	= Class.extend({
 			Object.keys(this.cAtlasParser.cImageMap),
 			SequenceNames.MACHGUN_PROJECTILE
 		);
-		var cMachGun	= new WeaponInfo(cProjAnim, "machgun", 60.0 * 20, 1.0, 200);
+		var cMachGun	= new WeaponInfo(cProjAnim, "machgun", 6.0 * 20, 1.0, 200);
 
 		this.cPlayer.setWeaponState(
 			new WeaponState(cMachGun)
@@ -171,7 +174,7 @@ var GameTest1	= Class.extend({
 		this.cPlayer.getWeaponState().setAmmoLeft(Number.POSITIVE_INFINITY);
 
 		this.cPlayer.setTurretName(ImageNames.TURRET);
-		this.cPlayer.setMoveSpeed(60.0 * 5);
+		this.cPlayer.setMoveSpeed(6.0 * 5);
 
 		this.createWalls();
 
@@ -181,7 +184,7 @@ var GameTest1	= Class.extend({
 	},
 
 	createWalls : function() {
-		var fThickness	= 10.0;
+		var fThickness	= 1.0;
 
 		var cLeft	= new PhysicsEntity(
 			this.cPhysicsManager.addBody({
@@ -264,13 +267,13 @@ var GameTest1	= Class.extend({
 				var cPos	= this.cPlayer.getPos();
 				var cOffset	= this.cPlayer.getFireVec();
 
-				cOffset.Multiply(this.cPlayer.getDim().x + 3.0);
+				cOffset.Multiply(this.cPlayer.getDim().x + 0.3);
 				cPos.Add(cOffset);
 
 				var cProj	= new Projectile(
 					this.cPhysicsManager.addBody({
 						cPos : cPos,
-						cDim : new b2.Vec2(2.0, 2.0)
+						cDim : new b2.Vec2(0.2, 0.2)
 					}),
 					new AnimState(
 						this.cPlayer.getWeaponState().getInfo().getAnimInfo()
@@ -308,7 +311,7 @@ var GameTest1	= Class.extend({
 		fDist	= cPos.LengthSquared();
 
 		// calculate volume based on distance
-		var fMaxDist	= (this.cViewRect.w * this.cViewRect.w + this.cViewRect.h * this.cViewRect.h) * 1.5;
+		var fMaxDist	= (this.cViewRect.w * this.cViewRect.w + this.cViewRect.h * this.cViewRect.h) * 2;
 		fVol			= 1.0 - (fDist / fMaxDist);
 
 		// play sound
@@ -321,7 +324,9 @@ var GameTest1	= Class.extend({
 		this.cStage.width	= this.cStage.width;
 		// get context
 		var cCtx			= this.cStage.getContext("2d");
-		var cViewRect		= this.cViewRect;
+
+		// clone a copy of the view rect for this render iteration
+		var cViewRect		= this.cViewRect.clone();
 
 		// update view rect position to centre on player
 		var cViewCentre		= new b2.Vec2(
@@ -343,9 +348,18 @@ var GameTest1	= Class.extend({
 
 		cViewRect.offset(cCorrection.x, cCorrection.y);
 
+		// scale up view rect to global scale
+		cViewRect.scale(this.fGlobalScale, this.fGlobalScale);
+
 		// define a funtion that resets context position to the position of our viewing rect
 		var zResetContext	= function() {
 			cCtx.setTransform(1, 0, 0, 1, -cViewRect.x, -cViewRect.y);
+		};
+
+		var fGlobalScale	= this.fGlobalScale;
+		var zApplyTransform	= function(cPos, fRot) {
+			cCtx.translate(cPos.x * fGlobalScale, cPos.y * fGlobalScale);
+			cCtx.rotate(fRot);
 		};
 
 		// draw bg
@@ -361,8 +375,7 @@ var GameTest1	= Class.extend({
 		var cPos	= this.cPlayer.getPos();
 		var fRot	= this.cPlayer.getLegRot();
 
-		cCtx.translate(cPos.x, cPos.y);
-		cCtx.rotate(fRot);
+		zApplyTransform(cPos, fRot);
 
 		this.cAtlasRenderer.draw(
 			this.cAtlasParser.getImageData(
@@ -375,8 +388,7 @@ var GameTest1	= Class.extend({
 		// body
 		fRot		= this.cPlayer.getTurretRot();
 
-		cCtx.translate(cPos.x, cPos.y);
-		cCtx.rotate(fRot);
+		zApplyTransform(cPos, fRot);
 
 		this.cAtlasRenderer.draw(
 			this.cAtlasParser.getImageData(
@@ -393,8 +405,7 @@ var GameTest1	= Class.extend({
 		{
 			cProj	= this.aProjList[i];
 
-			cCtx.translate(cProj.getPos().x, cProj.getPos().y);
-			cCtx.rotate(cProj.getPhysicsBody().GetAngle() + Math.PI);
+			zApplyTransform(cProj.getPos(), cProj.getPhysicsBody().GetAngle() + Math.PI);
 
 			this.cAtlasRenderer.draw(
 				this.cAtlasParser.getImageData(
@@ -411,8 +422,9 @@ var GameTest1	= Class.extend({
 		cArea	= new Rect(this.cPlayer.getPos().x, this.cPlayer.getPos().y, this.cPlayer.getDim().x, this.cPlayer.getDim().y);
 		cArea.offset(-this.cPlayer.getDim().x / 2, -this.cPlayer.getDim().y / 2);
 
-		cCtx.translate(cArea.midPoint().x, cArea.midPoint().y);
-		cCtx.rotate(this.cPlayer.getLegRot());
+		zApplyTransform(cArea.midPoint(), this.cPlayer.getLegRot());
+
+		cArea.scale(this.fGlobalScale, this.fGlobalScale);
 
 		cCtx.beginPath();
 		cCtx.strokeStyle	= "green";
@@ -422,15 +434,20 @@ var GameTest1	= Class.extend({
 		zResetContext();
 
 		// draw walls
-		this.aWallList.forEach(function(cItem) {
+		var cItem;
+
+		for (var i in this.aWallList)
+		{
+			cItem	= this.aWallList[i];
 			cArea	= new Rect(cItem.getPos().x, cItem.getPos().y, cItem.getDim().x, cItem.getDim().y);			
 			cArea.offset(-cItem.getDim().x / 2, -cItem.getDim().y / 2);
+			cArea.scale(this.fGlobalScale, this.fGlobalScale);
 
 			cCtx.beginPath();
 			cCtx.fillStyle	= "red";
 			cCtx.fillRect(cArea.x, cArea.y, cArea.w, cArea.h);
 			cCtx.closePath();
-		});
+		}
 	},
 
 	onContact : function(cBodyA, cBodyB, aImpulses) {
