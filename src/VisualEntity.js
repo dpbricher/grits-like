@@ -7,6 +7,8 @@ var VisualEntity	= Entity.extend({
 	fRotation : 0.0,
 
 	init : function(cAnimState) {
+		this._super();
+		
 		this.setAnim(cAnimState);
 	},
 

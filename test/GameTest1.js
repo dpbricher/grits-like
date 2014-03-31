@@ -307,10 +307,7 @@ var GameTest1	= Class.extend({
 				cProj.getPhysicsBody().SetAngle(this.cPlayer.getTurretRot() + Math.PI);
 
 				cProj.setOnContact(
-					Utils.bindFunc(this, function(cOtherEnt) {
-						cProj.flagKilled();
-						this.playSound(SoundNames.GRENADE, cProj.getPos());
-					})
+					Utils.bindFunc(this, this.onProjContact, cProj)
 				);
 
 				var cVel	= this.cPlayer.getFireVec();
@@ -320,6 +317,23 @@ var GameTest1	= Class.extend({
 
 				this.aProjList.push(cProj);
 			}
+	},
+
+	onProjContact : function(cProj, cOtherEnt) {
+		cProj.flagKilled();
+		this.playSound(SoundNames.GRENADE, cProj.getPos());
+
+		// create impact anim
+		var cAnim	= new VisualEntity(
+			new AnimState(
+				// this is a flawed way of getting the correct anim...
+				cProj.cOwner.getWeaponState().getInfo().getImpactInfo()
+			)
+		);
+		cAnim.setPos(cProj.getPos().x, cProj.getPos().y);
+		cAnim.setRot(cProj.getPhysicsBody().GetAngle());
+
+		this.aAnimList.push(cAnim);
 	},
 
 	updateAnims : function() {

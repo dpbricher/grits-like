@@ -9,6 +9,8 @@ var PhysicsEntity	= Entity.extend({
 	fMoveSpeed : 0.0,
 
 	init : function(cB2Body) {
+		this._super();
+
 		this.cPhysicsBody	= cB2Body;
 
 		// set physics body user data to this so we can use it in callbacks
