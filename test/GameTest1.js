@@ -10,6 +10,7 @@ var GameTest1	= Class.extend({
 
 	// cEntityManager : null,
 	aProjList : [],
+	aAnimList : [],
 	aWallList : null,
 
 	cInputManager : null,
@@ -162,11 +163,19 @@ var GameTest1	= Class.extend({
 			)
 		);
 
+		var cFlashAnim	= new AnimInfo(
+			Object.keys(this.cAtlasParser.cImageMap),
+			SequenceNames.MACHGUN_MUZZLE
+		);
 		var cProjAnim	= new AnimInfo(
 			Object.keys(this.cAtlasParser.cImageMap),
 			SequenceNames.MACHGUN_PROJECTILE
 		);
-		var cMachGun	= new WeaponInfo(cProjAnim, "machgun", 6.0 * 20, 1.0, 200);
+		var cImpactAnim	= new AnimInfo(
+			Object.keys(this.cAtlasParser.cImageMap),
+			SequenceNames.MACHGUN_IMPACT
+		);
+		var cMachGun	= new WeaponInfo(cFlashAnim, cProjAnim, cImpactAnim, "machgun", 6.0 * 10, 1.0, 200);
 
 		this.cPlayer.setWeaponState(
 			new WeaponState(cMachGun)
@@ -262,6 +271,18 @@ var GameTest1	= Class.extend({
 				// play bullet sound
 				this.cSoundManager.startSound(SoundNames.MACH_GUN, 0);
 
+				// create muzzle flash
+				var cFlash	= new VisualEntity(
+					new AnimState(
+						this.cPlayer.getWeaponState().getInfo().getFlashInfo()
+					)
+				);
+
+				cFlash.setPos(this.cPlayer.getPos().x, this.cPlayer.getPos().y);
+				cFlash.setRot(this.cPlayer.getTurretRot() + Math.PI);
+
+				this.aAnimList.push(cFlash);
+
 				// create projectile outside of owner's bounds, otherwise it will hit them...
 				// should look at improving this later.
 				var cPos	= this.cPlayer.getPos();
@@ -276,14 +297,14 @@ var GameTest1	= Class.extend({
 						cDim : new b2.Vec2(0.2, 0.2)
 					}),
 					new AnimState(
-						this.cPlayer.getWeaponState().getInfo().getAnimInfo()
+						this.cPlayer.getWeaponState().getInfo().getProjInfo()
 					),
 					this.cPlayer,
 					0.0
 				);
 
 				cProj.getPhysicsBody().SetBullet(true);
-				cProj.getPhysicsBody().SetAngle(this.cPlayer.getTurretRot());
+				cProj.getPhysicsBody().SetAngle(this.cPlayer.getTurretRot() + Math.PI);
 
 				cProj.setOnContact(
 					Utils.bindFunc(this, function(cOtherEnt) {
@@ -299,6 +320,24 @@ var GameTest1	= Class.extend({
 
 				this.aProjList.push(cProj);
 			}
+	},
+
+	updateAnims : function() {
+		var cAnim;
+
+		for (var i in this.aAnimList)
+		{
+			cAnim	= this.aAnimList[i];
+
+			if (cAnim.getAnim().getCurrentFrame() < cAnim.getAnim().getAnimInfo().getLastFrame())
+				cAnim.getAnim().stepFrames(1);
+			else
+				cAnim.flagKilled();
+		}
+
+		this.aAnimList	= this.aAnimList.filter(function(cItem) {
+			return !cItem.getIsKilled();
+		});
 	},
 
 	playSound : function(sName, cPos) {
@@ -398,6 +437,24 @@ var GameTest1	= Class.extend({
 
 		zResetContext();
 
+		// draw anims
+		var cAnim;
+
+		for (var i in this.aAnimList)
+		{
+			cAnim	= this.aAnimList[i];
+
+			zApplyTransform(cAnim.getPos(), cAnim.getRot());
+
+			this.cAtlasRenderer.draw(
+				this.cAtlasParser.getImageData(
+					cAnim.getAnim().getCurrentName()
+				)
+			);
+
+			zResetContext();
+		}
+
 		// draw projectiles
 		var cProj;
 
@@ -405,7 +462,7 @@ var GameTest1	= Class.extend({
 		{
 			cProj	= this.aProjList[i];
 
-			zApplyTransform(cProj.getPos(), cProj.getPhysicsBody().GetAngle() + Math.PI);
+			zApplyTransform(cProj.getPos(), cProj.getPhysicsBody().GetAngle());
 
 			this.cAtlasRenderer.draw(
 				this.cAtlasParser.getImageData(
@@ -471,6 +528,7 @@ var GameTest1	= Class.extend({
 		this.cPhysicsManager.update();
 
 		this.updatePlayer(iTime);
+		this.updateAnims();
 
 		this.aProjList.forEach(function(cItem) {
 			cItem.update();
