@@ -42,10 +42,10 @@ var PlayerEntity	= PhysicsEntity.extend({
 	},
 
 	/**
-	 * returns turret rot -90.0, since the image points to the right of the screen at rotation 0
+	 * returns turret rot +180.0, to make the image point in to correct direction
 	 */
 	getTurretRot : function() {
-		return this.fTurretRot;
+		return this.fTurretRot + Math.PI;
 	},
 
 	/**

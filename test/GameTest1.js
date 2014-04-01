@@ -175,7 +175,7 @@ var GameTest1	= Class.extend({
 			Object.keys(this.cAtlasParser.cImageMap),
 			SequenceNames.MACHGUN_IMPACT
 		);
-		var cMachGun	= new WeaponInfo(cFlashAnim, cProjAnim, cImpactAnim, "machgun", 6.0 * 10, 1.0, 200);
+		var cMachGun	= new WeaponInfo(cFlashAnim, cProjAnim, cImpactAnim, ImageNames.MACHGUN, "machgun", 6.0 * 10, 1.0, 200);
 
 		this.cPlayer.setWeaponState(
 			new WeaponState(cMachGun)
@@ -279,7 +279,7 @@ var GameTest1	= Class.extend({
 				);
 
 				cFlash.setPos(this.cPlayer.getPos().x, this.cPlayer.getPos().y);
-				cFlash.setRot(this.cPlayer.getTurretRot() + Math.PI);
+				cFlash.setRot(this.cPlayer.getTurretRot());
 
 				this.aAnimList.push(cFlash);
 
@@ -296,15 +296,13 @@ var GameTest1	= Class.extend({
 						cPos : cPos,
 						cDim : new b2.Vec2(0.2, 0.2)
 					}),
-					new AnimState(
-						this.cPlayer.getWeaponState().getInfo().getProjInfo()
-					),
+					this.cPlayer.getWeaponState().getInfo(),
 					this.cPlayer,
 					0.0
 				);
 
 				cProj.getPhysicsBody().SetBullet(true);
-				cProj.getPhysicsBody().SetAngle(this.cPlayer.getTurretRot() + Math.PI);
+				cProj.getPhysicsBody().SetAngle(this.cPlayer.getTurretRot());
 
 				cProj.setOnContact(
 					Utils.bindFunc(this, this.onProjContact, cProj)
@@ -326,8 +324,7 @@ var GameTest1	= Class.extend({
 		// create impact anim
 		var cAnim	= new VisualEntity(
 			new AnimState(
-				// this is a flawed way of getting the correct anim...
-				cProj.cOwner.getWeaponState().getInfo().getImpactInfo()
+				cProj.getCreatorInfo().getImpactInfo()
 			)
 		);
 		cAnim.setPos(cProj.getPos().x, cProj.getPos().y);
@@ -446,6 +443,13 @@ var GameTest1	= Class.extend({
 		this.cAtlasRenderer.draw(
 			this.cAtlasParser.getImageData(
 				this.cPlayer.getTurretName()
+			)
+		);
+
+		// current weapon
+		this.cAtlasRenderer.draw(
+			this.cAtlasParser.getImageData(
+				this.cPlayer.getWeaponState().getInfo().getImageName()
 			)
 		);
 

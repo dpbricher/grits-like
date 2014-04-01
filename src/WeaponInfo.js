@@ -1,26 +1,30 @@
 var WeaponInfo	= Class.extend({
-	// Anim info for muzzle flash
+	// anim info for muzzle flash
 	cFlashInfo : null,
 
-	// Anim info for projectile
+	// anim info for projectile
 	cProjInfo : null,
 
-	// Anim info for impact
+	// anim info for impact
 	cImpactInfo : null,
+
+	// image name for the image of the weapon itself
+	sImageName : null,
 
 	sName : null,
 
-	// Speed and damage of each projectile
+	// speed and damage of each projectile
 	fProjSpeed : 0.0,
 	fProjDamage : 0.0,
 
-	// Forced firing delay between shots, in milliseconds
+	// forced firing delay between shots, in milliseconds
 	iFireDelay : 0,
 
-	init : function(cFlashInfo, cProjInfo, cImpactInfo, sName, fProjSpeed, fProjDamage, iFireDelay) {
+	init : function(cFlashInfo, cProjInfo, cImpactInfo, sImageName, sName, fProjSpeed, fProjDamage, iFireDelay) {
 		this.cFlashInfo		= cFlashInfo;
 		this.cProjInfo		= cProjInfo;
 		this.cImpactInfo	= cImpactInfo;
+		this.sImageName		= sImageName;
 		this.sName			= sName;
 		this.fProjSpeed		= fProjSpeed;
 		this.fProjDamage	= fProjDamage;
@@ -37,6 +41,10 @@ var WeaponInfo	= Class.extend({
 
 	getImpactInfo : function() {
 		return this.cImpactInfo;
+	},
+
+	getImageName : function() {
+		return this.sImageName;
 	},
 
 	getProjSpeed : function() {
