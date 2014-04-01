@@ -163,24 +163,29 @@ var GameTest1	= Class.extend({
 			)
 		);
 
-		var cFlashAnim	= new AnimInfo(
-			Object.keys(this.cAtlasParser.cImageMap),
-			SequenceNames.MACHGUN_MUZZLE
-		);
-		var cProjAnim	= new AnimInfo(
-			Object.keys(this.cAtlasParser.cImageMap),
-			SequenceNames.MACHGUN_PROJECTILE
-		);
-		var cImpactAnim	= new AnimInfo(
-			Object.keys(this.cAtlasParser.cImageMap),
-			SequenceNames.MACHGUN_IMPACT
-		);
-		var cMachGun	= new WeaponInfo(cFlashAnim, cProjAnim, cImpactAnim, ImageNames.MACHGUN, "machgun", 6.0 * 10, 1.0, 200);
+		var cFlashAnim, cProjAnim, cImpactAnim;
+		var aSequenceList	= Object.keys(this.cAtlasParser.cImageMap);
 
-		this.cPlayer.setWeaponState(
+		cFlashAnim	= new AnimInfo(aSequenceList, SequenceNames.MACHGUN_MUZZLE);
+		cProjAnim	= new AnimInfo(aSequenceList, SequenceNames.MACHGUN_PROJECTILE);
+		cImpactAnim	= new AnimInfo(aSequenceList, SequenceNames.MACHGUN_IMPACT);
+		
+		var cMachGun		= new WeaponInfo(cFlashAnim, cProjAnim, cImpactAnim, ImageNames.MACHGUN, "machgun", 6.0 * 10, 1.0, 200);
+
+		cFlashAnim	= new AnimInfo(aSequenceList, SequenceNames.ROCKET_MUZZLE);
+		cProjAnim	= new AnimInfo(aSequenceList, SequenceNames.ROCKET_PROJECTILE);
+		cImpactAnim	= new AnimInfo(aSequenceList, SequenceNames.ROCKET_IMPACT);
+
+		var cRocketLauncher	= new WeaponInfo(cFlashAnim, cProjAnim, cImpactAnim, ImageNames.ROCKET_LAUNCHER, "rocket_launcher", 6.0 * 8, 10.0, 1000);
+
+		this.cPlayer.setWeaponLeft(
+			new WeaponState(cRocketLauncher)
+		);
+		this.cPlayer.setWeaponRight(
 			new WeaponState(cMachGun)
 		);
-		this.cPlayer.getWeaponState().setAmmoLeft(Number.POSITIVE_INFINITY);
+		this.cPlayer.getWeaponLeft().setAmmoLeft(Number.POSITIVE_INFINITY);
+		this.cPlayer.getWeaponRight().setAmmoLeft(Number.POSITIVE_INFINITY);
 
 		this.cPlayer.setTurretName(ImageNames.TURRET);
 		this.cPlayer.setMoveSpeed(6.0 * 5);
@@ -266,7 +271,10 @@ var GameTest1	= Class.extend({
 			this.cPlayer.getLegAnim().stepFrames(1);
 
 		if (this.cPlayer.getFireVec().LengthSquared() > 0)
-			if (this.cPlayer.getWeaponState().tryFire())
+		{
+			var cWeaponState	= this.cPlayer.getWeaponLeft();
+
+			if (cWeaponState.tryFire())
 			{
 				// play bullet sound
 				this.cSoundManager.startSound(SoundNames.MACH_GUN, 0);
@@ -274,7 +282,7 @@ var GameTest1	= Class.extend({
 				// create muzzle flash
 				var cFlash	= new VisualEntity(
 					new AnimState(
-						this.cPlayer.getWeaponState().getInfo().getFlashInfo()
+						cWeaponState.getInfo().getFlashInfo()
 					)
 				);
 
@@ -296,7 +304,7 @@ var GameTest1	= Class.extend({
 						cPos : cPos,
 						cDim : new b2.Vec2(0.2, 0.2)
 					}),
-					this.cPlayer.getWeaponState().getInfo(),
+					cWeaponState.getInfo(),
 					this.cPlayer,
 					0.0
 				);
@@ -309,12 +317,13 @@ var GameTest1	= Class.extend({
 				);
 
 				var cVel	= this.cPlayer.getFireVec();
-				cVel.Multiply(this.cPlayer.getWeaponState().getInfo().getProjSpeed());
+				cVel.Multiply(cWeaponState.getInfo().getProjSpeed());
 
 				cProj.setVelocity(cVel.x, cVel.y);
 
 				this.aProjList.push(cProj);
 			}
+		}
 	},
 
 	onProjContact : function(cProj, cOtherEnt) {
@@ -446,10 +455,20 @@ var GameTest1	= Class.extend({
 			)
 		);
 
-		// current weapon
+		// right weapon
 		this.cAtlasRenderer.draw(
 			this.cAtlasParser.getImageData(
-				this.cPlayer.getWeaponState().getInfo().getImageName()
+				this.cPlayer.getWeaponRight().getInfo().getImageName()
+			)
+		);
+
+		// left weapon
+		cCtx.rotate(Math.PI);
+		cCtx.scale(-1.0, -1.0);
+
+		this.cAtlasRenderer.draw(
+			this.cAtlasParser.getImageData(
+				this.cPlayer.getWeaponLeft().getInfo().getImageName()
 			)
 		);
 

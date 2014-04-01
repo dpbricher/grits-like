@@ -3,7 +3,9 @@ var PlayerEntity	= PhysicsEntity.extend({
 
 	cFireVec : null,
 
-	cWeaponState : null,
+	// weapon states
+	cWeaponLeft : null,
+	cWeaponRight : null,
 
 	sTurrentName : null,
 
@@ -33,12 +35,20 @@ var PlayerEntity	= PhysicsEntity.extend({
 		return this.cFireVec.Copy();
 	},
 
-	setWeaponState : function(cState) {
-		this.cWeaponState	= cState;
+	setWeaponLeft : function(cState) {
+		this.cWeaponLeft	= cState;
 	},
 
-	getWeaponState : function() {
-		return this.cWeaponState;
+	getWeaponLeft : function() {
+		return this.cWeaponLeft;
+	},
+
+	setWeaponRight : function(cState) {
+		this.cWeaponRight	= cState;
+	},
+
+	getWeaponRight : function() {
+		return this.cWeaponRight;
 	},
 
 	/**
@@ -84,6 +94,7 @@ var PlayerEntity	= PhysicsEntity.extend({
 		if (this.cFireVec.LengthSquared() > 0)
 			this.fTurretRot	= Math.atan2(this.cFireVec.y, this.cFireVec.x);
 
-		this.cWeaponState.update(iTime);
+		this.cWeaponLeft.update(iTime);
+		this.cWeaponRight.update(iTime);
 	}
 });
