@@ -3,6 +3,7 @@
  */
 var b2	= {
 	Vec2 : Box2D.Common.Math.b2Vec2,
+	Mat22 : Box2D.Common.Math.b2Mat22,
 	BodyDef : Box2D.Dynamics.b2BodyDef,
 	Body : Box2D.Dynamics.b2Body,
 	ContactListener : Box2D.Dynamics.b2ContactListener,

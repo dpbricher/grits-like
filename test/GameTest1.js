@@ -170,13 +170,17 @@ var GameTest1	= Class.extend({
 		cProjAnim	= new AnimInfo(aSequenceList, SequenceNames.MACHGUN_PROJECTILE);
 		cImpactAnim	= new AnimInfo(aSequenceList, SequenceNames.MACHGUN_IMPACT);
 		
-		var cMachGun		= new WeaponInfo(cFlashAnim, cProjAnim, cImpactAnim, ImageNames.MACHGUN, "machgun", 6.0 * 10, 1.0, 200);
+		var cMachGun		= new WeaponInfo(cFlashAnim, cProjAnim, cImpactAnim, new b2.Vec2(0.2, 0.2),
+			new b2.Vec2(this.cPlayer.getDim().x * 0.35, -this.cPlayer.getDim().y / 2), ImageNames.MACHGUN, "machgun",
+			6.0 * 10, 1.0, 200);
 
 		cFlashAnim	= new AnimInfo(aSequenceList, SequenceNames.ROCKET_MUZZLE);
 		cProjAnim	= new AnimInfo(aSequenceList, SequenceNames.ROCKET_PROJECTILE);
 		cImpactAnim	= new AnimInfo(aSequenceList, SequenceNames.ROCKET_IMPACT);
 
-		var cRocketLauncher	= new WeaponInfo(cFlashAnim, cProjAnim, cImpactAnim, ImageNames.ROCKET_LAUNCHER, "rocket_launcher", 6.0 * 8, 10.0, 1000);
+		var cRocketLauncher	= new WeaponInfo(cFlashAnim, cProjAnim, cImpactAnim, new b2.Vec2(0.4, 0.4),
+			new b2.Vec2(this.cPlayer.getDim().x / 4, -this.cPlayer.getDim().y / 2), ImageNames.ROCKET_LAUNCHER, "rocket_launcher",
+			6.0 * 8, 10.0, 1000);
 
 		this.cPlayer.setWeaponLeft(
 			new WeaponState(cRocketLauncher)
@@ -272,56 +276,76 @@ var GameTest1	= Class.extend({
 
 		if (this.cPlayer.getFireVec().LengthSquared() > 0)
 		{
-			var cWeaponState	= this.cPlayer.getWeaponLeft();
+			var cWeaponState;
+			var aWeapons		= [
+				this.cPlayer.getWeaponLeft(),
+				this.cPlayer.getWeaponRight()
+			];
 
-			if (cWeaponState.tryFire())
+			for (var i in aWeapons)
 			{
-				// play bullet sound
-				this.cSoundManager.startSound(SoundNames.MACH_GUN, 0);
+				cWeaponState	= aWeapons[i];
 
-				// create muzzle flash
-				var cFlash	= new VisualEntity(
-					new AnimState(
-						cWeaponState.getInfo().getFlashInfo()
-					)
-				);
+				if (cWeaponState.tryFire())
+				{
+					// play bullet sound
+					this.cSoundManager.startSound(SoundNames.MACH_GUN, 0);
 
-				cFlash.setPos(this.cPlayer.getPos().x, this.cPlayer.getPos().y);
-				cFlash.setRot(this.cPlayer.getTurretRot());
+					// create muzzle flash
+					var cFlash	= new VisualEntity(
+						new AnimState(
+							cWeaponState.getInfo().getFlashInfo()
+						)
+					);
 
-				this.aAnimList.push(cFlash);
+					cFlash.setPos(this.cPlayer.getPos().x, this.cPlayer.getPos().y);
+					cFlash.setRot(this.cPlayer.getTurretRot());
 
-				// create projectile outside of owner's bounds, otherwise it will hit them...
-				// should look at improving this later.
-				var cPos	= this.cPlayer.getPos();
-				var cOffset	= this.cPlayer.getFireVec();
+					this.aAnimList.push(cFlash);
 
-				cOffset.Multiply(this.cPlayer.getDim().x + 0.3);
-				cPos.Add(cOffset);
+					// create projectile
+					var cPos	= this.cPlayer.getPos();
+					var cOffset	= cWeaponState.getInfo().getMuzzleOffset();
 
-				var cProj	= new Projectile(
-					this.cPhysicsManager.addBody({
-						cPos : cPos,
-						cDim : new b2.Vec2(0.2, 0.2)
-					}),
-					cWeaponState.getInfo(),
-					this.cPlayer,
-					0.0
-				);
+					// muzzle offsets are for the right weapon facing upwards, so flip sides if for the left weapon
+					if (cWeaponState == this.cPlayer.getWeaponLeft())
+						cOffset.x	= -cOffset.x;
 
-				cProj.getPhysicsBody().SetBullet(true);
-				cProj.getPhysicsBody().SetAngle(this.cPlayer.getTurretRot());
+					// offset projectile's pos by its height
+					cOffset.y	-= cWeaponState.getInfo().getProjDim().y;
 
-				cProj.setOnContact(
-					Utils.bindFunc(this, this.onProjContact, cProj)
-				);
+					// rotate pos around player based on turret facing
+					var cRotMat	= new b2.Mat22();
+					cRotMat.Set(this.cPlayer.getTurretRot() - Math.PI / 2);
 
-				var cVel	= this.cPlayer.getFireVec();
-				cVel.Multiply(cWeaponState.getInfo().getProjSpeed());
+					cOffset.MulM(cRotMat);
 
-				cProj.setVelocity(cVel.x, cVel.y);
+					cPos.Add(cOffset);
 
-				this.aProjList.push(cProj);
+					var cProj	= new Projectile(
+						this.cPhysicsManager.addBody({
+							cPos : cPos,
+							cDim : cWeaponState.getInfo().getProjDim()
+						}),
+						cWeaponState.getInfo(),
+						this.cPlayer,
+						0.0
+					);
+
+					cProj.getPhysicsBody().SetBullet(true);
+					cProj.getPhysicsBody().SetAngle(this.cPlayer.getTurretRot());
+
+					cProj.setOnContact(
+						Utils.bindFunc(this, this.onProjContact, cProj)
+					);
+
+					var cVel	= this.cPlayer.getFireVec();
+					cVel.Multiply(cWeaponState.getInfo().getProjSpeed());
+
+					cProj.setVelocity(cVel.x, cVel.y);
+
+					this.aProjList.push(cProj);
+				}
 			}
 		}
 	},
