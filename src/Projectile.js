@@ -2,25 +2,25 @@ var Projectile	= AnimEntity.extend({
 	// The entity responsible for the creation of this projectile
 	cOwner : null,
 
-	// weapon info for the weapon that created this projectile
-	cCreatorInfo : null,
+	// projectile info for this projectile
+	cProjInfo : null,
 
 	fDamage : 0.0,
 
-	init : function(cB2BodyDef, cCreatorInfo, cOwner, fDamage) {
-		this.cCreatorInfo	= cCreatorInfo;
-		this.cOwner			= cOwner;
-		this.fDamage		= fDamage;
+	init : function(cB2BodyDef, cProjInfo, cOwner, fDamage) {
+		this.cProjInfo	= cProjInfo;
+		this.cOwner		= cOwner;
+		this.fDamage	= fDamage;
 
 		this._super(
 			cB2BodyDef,
 			new AnimState(
-				this.cCreatorInfo.getProjInfo()
+				this.cProjInfo.getProjAnim()
 			)
 		);
 	},
 
-	getCreatorInfo : function() {
-		return this.cCreatorInfo;
+	getInfo : function() {
+		return this.cProjInfo;
 	}
 });

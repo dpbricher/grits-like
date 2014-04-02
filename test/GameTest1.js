@@ -124,7 +124,9 @@ var GameTest1	= Class.extend({
 			[
 				// "sounds/" + SoundNames.BG_GAME,
 				"sounds/" + SoundNames.MACH_GUN,
-				"sounds/" + SoundNames.GRENADE
+				"sounds/" + SoundNames.ROCKET,
+				"sounds/" + SoundNames.GRENADE,
+				"sounds/" + SoundNames.EXPLODE
 			],
 			Utils.bindFunc(this, this.onSoundsLoaded)
 		);
@@ -170,17 +172,19 @@ var GameTest1	= Class.extend({
 		cProjAnim	= new AnimInfo(aSequenceList, SequenceNames.MACHGUN_PROJECTILE);
 		cImpactAnim	= new AnimInfo(aSequenceList, SequenceNames.MACHGUN_IMPACT);
 		
-		var cMachGun		= new WeaponInfo(cFlashAnim, cProjAnim, cImpactAnim, new b2.Vec2(0.2, 0.2),
-			new b2.Vec2(this.cPlayer.getDim().x * 0.35, -this.cPlayer.getDim().y / 2), ImageNames.MACHGUN, "machgun",
-			6.0 * 10, 1.0, 200);
+		var cMachProj		= new ProjectileInfo(cProjAnim, cImpactAnim, new b2.Vec2(0.2, 0.2), SoundNames.GRENADE, 6.0 * 10, 1.0);
+		var cMachGun		= new WeaponInfo(cFlashAnim, cMachProj,
+			new b2.Vec2(this.cPlayer.getDim().x * 0.35, -this.cPlayer.getDim().y / 2), ImageNames.MACHGUN,
+			SoundNames.MACH_GUN, "machgun", 200);
 
 		cFlashAnim	= new AnimInfo(aSequenceList, SequenceNames.ROCKET_MUZZLE);
 		cProjAnim	= new AnimInfo(aSequenceList, SequenceNames.ROCKET_PROJECTILE);
 		cImpactAnim	= new AnimInfo(aSequenceList, SequenceNames.ROCKET_IMPACT);
 
-		var cRocketLauncher	= new WeaponInfo(cFlashAnim, cProjAnim, cImpactAnim, new b2.Vec2(0.4, 0.4),
-			new b2.Vec2(this.cPlayer.getDim().x / 4, -this.cPlayer.getDim().y / 2), ImageNames.ROCKET_LAUNCHER, "rocket_launcher",
-			6.0 * 8, 10.0, 1000);
+		var cRocketProj		= new ProjectileInfo(cProjAnim, cImpactAnim, new b2.Vec2(0.4, 0.4), SoundNames.EXPLODE, 6.0 * 8, 10.0);
+		var cRocketLauncher	= new WeaponInfo(cFlashAnim, cRocketProj,
+			new b2.Vec2(this.cPlayer.getDim().x / 4, -this.cPlayer.getDim().y / 2), ImageNames.ROCKET_LAUNCHER,
+			SoundNames.ROCKET, "rocket_launcher", 1000);
 
 		this.cPlayer.setWeaponLeft(
 			new WeaponState(cRocketLauncher)
@@ -288,13 +292,13 @@ var GameTest1	= Class.extend({
 
 				if (cWeaponState.tryFire())
 				{
-					// play bullet sound
-					this.cSoundManager.startSound(SoundNames.MACH_GUN, 0);
+					// play weapon fire sound
+					this.cSoundManager.startSound(cWeaponState.getInfo().getFireSoundName(), 0);
 
 					// create muzzle flash
 					var cFlash	= new VisualEntity(
 						new AnimState(
-							cWeaponState.getInfo().getFlashInfo()
+							cWeaponState.getInfo().getFlashAnim()
 						)
 					);
 
@@ -312,7 +316,7 @@ var GameTest1	= Class.extend({
 						cOffset.x	= -cOffset.x;
 
 					// offset projectile's pos by its height
-					cOffset.y	-= cWeaponState.getInfo().getProjDim().y;
+					cOffset.y	-= cWeaponState.getInfo().getProjInfo().getDim().y;
 
 					// rotate pos around player based on turret facing
 					var cRotMat	= new b2.Mat22();
@@ -325,9 +329,9 @@ var GameTest1	= Class.extend({
 					var cProj	= new Projectile(
 						this.cPhysicsManager.addBody({
 							cPos : cPos,
-							cDim : cWeaponState.getInfo().getProjDim()
+							cDim : cWeaponState.getInfo().getProjInfo().getDim()
 						}),
-						cWeaponState.getInfo(),
+						cWeaponState.getInfo().getProjInfo(),
 						this.cPlayer,
 						0.0
 					);
@@ -340,7 +344,7 @@ var GameTest1	= Class.extend({
 					);
 
 					var cVel	= this.cPlayer.getFireVec();
-					cVel.Multiply(cWeaponState.getInfo().getProjSpeed());
+					cVel.Multiply(cWeaponState.getInfo().getProjInfo().getSpeed());
 
 					cProj.setVelocity(cVel.x, cVel.y);
 
@@ -352,12 +356,14 @@ var GameTest1	= Class.extend({
 
 	onProjContact : function(cProj, cOtherEnt) {
 		cProj.flagKilled();
-		this.playSound(SoundNames.GRENADE, cProj.getPos());
+
+		// play impact sound
+		// this.playSound(cProj.getInfo().getImpactSoundName(), cProj.getPos());
 
 		// create impact anim
 		var cAnim	= new VisualEntity(
 			new AnimState(
-				cProj.getCreatorInfo().getImpactInfo()
+				cProj.getInfo().getImpactAnim()
 			)
 		);
 		cAnim.setPos(cProj.getPos().x, cProj.getPos().y);

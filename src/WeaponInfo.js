@@ -1,56 +1,40 @@
 var WeaponInfo	= Class.extend({
 	// anim info for muzzle flash
-	cFlashInfo : null,
+	cFlashAnim : null,
 
-	// anim info for projectile
-	cProjInfo : null,
-
-	// anim info for impact
-	cImpactInfo : null,
-
-	cProjDim : null,
-
+	// b2Vec2 muzzle offset from centre of weapon owner entity, assuming weapon is pointing directly upwards
 	cMuzzleOffset : null,
+
+	// projectile info
+	cProjInfo : null,
 
 	// image name for the image of the weapon itself
 	sImageName : null,
 
-	sName : null,
+	// name of the weapon's firing sound effect
+	sFireSound : null,
 
-	// speed and damage of each projectile
-	fProjSpeed : 0.0,
-	fProjDamage : 0.0,
+	sName : null,
 
 	// forced firing delay between shots, in milliseconds
 	iFireDelay : 0,
 
-	init : function(cFlashInfo, cProjInfo, cImpactInfo, cProjDim, cMuzzleOffset, sImageName, sName, fProjSpeed, fProjDamage, iFireDelay) {
-		this.cFlashInfo		= cFlashInfo;
+	init : function(cFlashAnimInfo, cProjInfo, cMuzzleOffset, sImageName, sFireSoundName, sName, iFireDelay) {
+		this.cFlashAnim		= cFlashAnimInfo;
 		this.cProjInfo		= cProjInfo;
-		this.cImpactInfo	= cImpactInfo;
-		this.cProjDim		= cProjDim;
 		this.cMuzzleOffset	= cMuzzleOffset;
 		this.sImageName		= sImageName;
+		this.sFireSound		= sFireSoundName;
 		this.sName			= sName;
-		this.fProjSpeed		= fProjSpeed;
-		this.fProjDamage	= fProjDamage;
 		this.iFireDelay		= iFireDelay;
 	},
 
-	getFlashInfo : function() {
-		return this.cFlashInfo;
+	getFlashAnim : function() {
+		return this.cFlashAnim;
 	},
 
 	getProjInfo : function() {
 		return this.cProjInfo;
-	},
-
-	getImpactInfo : function() {
-		return this.cImpactInfo;
-	},
-
-	getProjDim : function() {
-		return this.cProjDim.Copy();
 	},
 
 	getMuzzleOffset : function() {
@@ -61,8 +45,8 @@ var WeaponInfo	= Class.extend({
 		return this.sImageName;
 	},
 
-	getProjSpeed : function() {
-		return this.fProjSpeed;
+	getFireSoundName : function() {
+		return this.sFireSound;
 	},
 
 	getFireDelay : function() {
