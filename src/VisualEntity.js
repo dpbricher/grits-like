@@ -4,6 +4,8 @@
 var VisualEntity	= Entity.extend({
 	cAnimState : null,
 
+	sType : "VisualEntity",
+
 	fRotation : 0.0,
 
 	init : function(cAnimState) {

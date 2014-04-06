@@ -4,6 +4,8 @@
 var AnimEntity	= PhysicsEntity.extend({
 	cAnimState : null,
 
+	sType : "AnimEntity",
+
 	init : function(cB2BodyDef, cAnimState) {
 		this._super(cB2BodyDef);
 

@@ -86,6 +86,17 @@ var PhysicsManager	= Class.extend({
 		this.cWorld.SetContactListener(cListener);
 	},
 
+	addContactFilter : function (cCallbacks) {
+		var cFilter	= new b2.ContactFilter();
+
+		if (typeof(cCallbacks.ShouldCollide) == "function")
+		{
+			cFilter.ShouldCollide	= cCallbacks.ShouldCollide;
+		}
+
+		this.cWorld.SetContactFilter(cFilter);
+	},
+
 	removeBody : function(cBody) {
 		this.cWorld.DestroyBody(cBody);
 	},

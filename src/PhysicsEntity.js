@@ -6,6 +6,8 @@ var PhysicsEntity	= Entity.extend({
 	// Use this for any custom contact response logic
 	zOnContact : function(){},
 
+	sType : "PhysicsEntity",
+
 	fMoveSpeed : 0.0,
 
 	init : function(cB2Body) {

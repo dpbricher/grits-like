@@ -80,6 +80,10 @@ var GameTest1	= Class.extend({
 			PostSolve : this.onContact
 		});
 
+		this.cPhysicsManager.addContactFilter({
+			ShouldCollide : this.shouldCollide
+		});
+
 		// add key bindings
 		this.cInputManager.bindAction(KeyCodes.W, Actions.MOVE_UP);
 		this.cInputManager.bindAction(KeyCodes.A, Actions.MOVE_LEFT);
@@ -174,7 +178,8 @@ var GameTest1	= Class.extend({
 		
 		var cMachProj		= new ProjectileInfo(cProjAnim, cImpactAnim, new b2.Vec2(0.2, 0.2), SoundNames.GRENADE, 6.0 * 10, 1.0);
 		var cMachGun		= new WeaponInfo(cFlashAnim, cMachProj,
-			new b2.Vec2(this.cPlayer.getDim().x * 0.35, -this.cPlayer.getDim().y / 2), ImageNames.MACHGUN,
+			new b2.Vec2(0, -this.cPlayer.getDim().y / 2), ImageNames.MACHGUN,
+			// new b2.Vec2(this.cPlayer.getDim().x * 0.35, -this.cPlayer.getDim().y / 2), ImageNames.MACHGUN,
 			SoundNames.MACH_GUN, "machgun", 200);
 
 		cFlashAnim	= new AnimInfo(aSequenceList, SequenceNames.ROCKET_MUZZLE);
@@ -183,7 +188,8 @@ var GameTest1	= Class.extend({
 
 		var cRocketProj		= new ProjectileInfo(cProjAnim, cImpactAnim, new b2.Vec2(0.4, 0.4), SoundNames.EXPLODE, 6.0 * 8, 10.0);
 		var cRocketLauncher	= new WeaponInfo(cFlashAnim, cRocketProj,
-			new b2.Vec2(this.cPlayer.getDim().x / 4, -this.cPlayer.getDim().y / 2), ImageNames.ROCKET_LAUNCHER,
+			new b2.Vec2(0, -this.cPlayer.getDim().y / 2), ImageNames.ROCKET_LAUNCHER,
+			// new b2.Vec2(this.cPlayer.getDim().x / 4, -this.cPlayer.getDim().y / 2), ImageNames.ROCKET_LAUNCHER,
 			SoundNames.ROCKET, "rocket_launcher", 1000);
 
 		this.cPlayer.setWeaponLeft(
@@ -584,6 +590,20 @@ var GameTest1	= Class.extend({
 
 		cEntA.onContact(cEntB);
 		cEntB.onContact(cEntA);
+	},
+
+	shouldCollide : function(cFixA, cFixB) {
+		var cEntA			= cFixA.GetBody().GetUserData();
+		var cEntB			= cFixB.GetBody().GetUserData();
+
+		var bShouldCollide	= true;
+
+		// prevent projectiles from hitting each other
+		if (cEntA.getType() === Projectile.prototype.getType() &&
+			cEntA.getType() === cEntB.getType())
+			bShouldCollide	= false;
+
+		return bShouldCollide;
 	},
 
 	update : function() {

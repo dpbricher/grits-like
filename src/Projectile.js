@@ -5,6 +5,8 @@ var Projectile	= AnimEntity.extend({
 	// projectile info for this projectile
 	cProjInfo : null,
 
+	sType : "Projectile",
+
 	fDamage : 0.0,
 
 	init : function(cB2BodyDef, cProjInfo, cOwner, fDamage) {

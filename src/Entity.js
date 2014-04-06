@@ -7,6 +7,9 @@ var Entity	= Class.extend({
 	// save dimensions as half width / height because that's the values that Box2D uses
 	cHalfDim : null,
 
+	// type of entity; Should be redefined by any classes that extend this one
+	sType : "Entity",
+
 	bIsKilled : false,
 
 	init : function() {
@@ -43,5 +46,9 @@ var Entity	= Class.extend({
 
 	getIsKilled : function() {
 		return this.bIsKilled;
+	},
+
+	getType : function() {
+		return this.sType;
 	}
 });

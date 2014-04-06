@@ -7,6 +7,8 @@ var PlayerEntity	= PhysicsEntity.extend({
 	cWeaponLeft : null,
 	cWeaponRight : null,
 
+	sType : "PlayerEntity",
+
 	sTurrentName : null,
 
 	// Turret and leg rotations, stored in radians
