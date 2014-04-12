@@ -70,28 +70,31 @@ var PhysicsManager	= Class.extend({
 
 		if (typeof(cCallbacks.PostSolve) == "function")
 		{
-			/**
-			 * According to the udacity course we will want to contruct the callback arguments in the following way.
-			 * Will probably look into this myself later, but cba right now :D
-			 */
 			cListener.PostSolve	= function (contact, impulse) {
-				cCallbacks.PostSolve(
-					contact.GetFixtureA().GetBody(),
-                    contact.GetFixtureB().GetBody(),
-                    impulse.normalImpulses[0]
-                );
+				var cEntA	= contact.GetFixtureA().GetBody().GetUserData();
+				var cEntB	= contact.GetFixtureB().GetBody().GetUserData();
+				
+				cCallbacks.PostSolve(cEntA, cEntB, impulse.normalImpulses[0]);
 			};
 		}
 
 		this.cWorld.SetContactListener(cListener);
 	},
 
+	/**
+	 * Similar to addContactListener, but with a b2ContactFilter
+	 */
 	addContactFilter : function (cCallbacks) {
 		var cFilter	= new b2.ContactFilter();
 
 		if (typeof(cCallbacks.ShouldCollide) == "function")
 		{
-			cFilter.ShouldCollide	= cCallbacks.ShouldCollide;
+			cFilter.ShouldCollide	= function(cFixA, cFixB) {
+				var cEntA	= cFixA.GetBody().GetUserData();
+				var cEntB	= cFixB.GetBody().GetUserData();
+				
+				return cCallbacks.ShouldCollide(cEntA, cEntB);
+			};
 		}
 
 		this.cWorld.SetContactFilter(cFilter);
