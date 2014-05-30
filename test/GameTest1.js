@@ -600,6 +600,31 @@ var GameTest1	= Class.extend({
 
 		var cArea;
 
+		// draw player life bars
+		this.aPlayerList.forEach(
+			function(cPlayer) {
+				var cTL		= cPlayer.getPos();
+				cTL.Subtract(cPlayer.getDim());
+
+				cTL.Multiply(this.fGlobalScale);
+
+				var fHPLeft	= cPlayer.getHitPoints();
+				var fHPGone	= 100.0 - fHPLeft;
+
+				// draw HP remaining
+				cCtx.beginPath();
+				cCtx.fillStyle	= "green";
+				cCtx.fillRect(cTL.x, cTL.y, cPlayer.getHitPoints(), 2);
+				cCtx.closePath();
+
+				// draw HP lost
+				cCtx.beginPath();
+				cCtx.fillStyle	= "red";
+				cCtx.fillRect(cTL.x + fHPLeft, cTL.y, fHPGone, 2);
+				cCtx.closePath();
+			}.bind(this)
+		);
+
 		// draw player hit rects
 		this.aPlayerList.forEach(
 			function(cPlayer) {
