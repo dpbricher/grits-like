@@ -15,6 +15,8 @@ var PlayerEntity	= PhysicsEntity.extend({
 	fLegRot : 0.0,
 	fTurretRot : 0.0,
 
+	fHitPoints : 0,
+
 	init : function(cB2Body) {
 		this._super(cB2Body);
 
@@ -53,6 +55,14 @@ var PlayerEntity	= PhysicsEntity.extend({
 		return this.cWeaponRight;
 	},
 
+	setHitPoints : function(iHp) {
+		this.fHitPoints	= iHp;
+	},
+
+	getHitPoints : function() {
+		return this.fHitPoints;
+	},
+
 	/**
 	 * returns turret rot +180.0, to make the image point in to correct direction
 	 */
@@ -80,6 +90,10 @@ var PlayerEntity	= PhysicsEntity.extend({
 
 		if (!bNoReset)
 			this.cLegState.gotoFrame(0);
+	},
+
+	damageHitPoints : function(fDamage) {
+		this.fHitPoints	-= fDamage;
 	},
 
 	update : function(iTime) {

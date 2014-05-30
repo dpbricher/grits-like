@@ -4,14 +4,16 @@ var GameTest1	= Class.extend({
 	cUpdateHandle : null,
 
 	cPlayer : null,
+	cDummyPlayer : null,
 
 	cAtlasParser : null,
 	cAtlasRenderer : null,
 
 	// cEntityManager : null,
-	aProjList : [],
 	aAnimList : [],
-	aWallList : null,
+	aPlayerList : [],
+	aProjList : [],
+	aWallList : [],
 
 	cInputManager : null,
 
@@ -33,7 +35,7 @@ var GameTest1	= Class.extend({
 
 	/**
 	 * Amount to scale up all entity positions and dimensions by when rendering.
-	 * This is necessary because box2d requires units too be in meters/kilograms/seconds
+	 * This is necessary because box2d requires units to be in meters/kilograms/seconds
 	 */
 	fGlobalScale : 10.0,
 
@@ -202,6 +204,39 @@ var GameTest1	= Class.extend({
 		this.cPlayer.setTurretName(ImageNames.TURRET);
 		this.cPlayer.setMoveSpeed(6.0 * 5);
 
+		this.cPlayer.setHitPoints(100);
+
+		// init dummy player
+		this.cDummyPlayer	= new PlayerEntity(
+			this.cPhysicsManager.addBody({
+				cPos : new b2.Vec2(this.cMapBounds.w / 2, this.cMapBounds.h / 2),
+				cDim : new b2.Vec2(5.0, 5.0)
+			})
+		);
+
+		this.cDummyPlayer.initLegAnim(
+			new AnimInfo(
+				Object.keys(this.cAtlasParser.cImageMap),
+				SequenceNames.WALK_RIGHT
+			)
+		);
+
+		this.cDummyPlayer.setWeaponLeft(
+			new WeaponState(cRocketLauncher)
+		);
+		this.cDummyPlayer.setWeaponRight(
+			new WeaponState(cMachGun)
+		);
+		this.cDummyPlayer.getWeaponLeft().setAmmoLeft(Number.POSITIVE_INFINITY);
+		this.cDummyPlayer.getWeaponRight().setAmmoLeft(Number.POSITIVE_INFINITY);
+		
+		this.cDummyPlayer.setTurretName(ImageNames.TURRET);
+
+		this.cDummyPlayer.setHitPoints(100);
+
+		this.aPlayerList	= [this.cPlayer, this.cDummyPlayer];
+
+		// create walls
 		this.createWalls();
 
 		// start update loop
@@ -274,88 +309,96 @@ var GameTest1	= Class.extend({
 		cFireVec.Normalize();
 
 		this.cPlayer.setFireVec(cFireVec.x, cFireVec.y);
+		this.cDummyPlayer.setFireVec(cFireVec.x, cFireVec.y);
 	},
 
-	updatePlayer : function(iTime) {
-		this.cPlayer.update(iTime);
+	updatePlayers : function(iTime) {
+		this.aPlayerList.forEach(
+			function(cPlayer) {
+				cPlayer.update(iTime);
+				
+				if (cPlayer.getHitPoints() <= 0)
+					cPlayer.flagKilled();
 
-		if (this.cPlayer.getVelocity().LengthSquared() > 0)
-			this.cPlayer.getLegAnim().stepFrames(1);
+				if (cPlayer.getVelocity().LengthSquared() > 0)
+					cPlayer.getLegAnim().stepFrames(1);
 
-		if (this.cPlayer.getFireVec().LengthSquared() > 0)
-		{
-			var cWeaponState;
-			var aWeapons		= [
-				this.cPlayer.getWeaponLeft(),
-				this.cPlayer.getWeaponRight()
-			];
-
-			for (var i in aWeapons)
-			{
-				cWeaponState	= aWeapons[i];
-
-				if (cWeaponState.tryFire())
+				if (cPlayer.getFireVec().LengthSquared() > 0)
 				{
-					// play weapon fire sound
-					this.cSoundManager.startSound(cWeaponState.getInfo().getFireSoundName(), 0);
+					var cWeaponState;
+					var aWeapons		= [
+						cPlayer.getWeaponLeft(),
+						cPlayer.getWeaponRight()
+					];
 
-					// create muzzle flash
-					var cFlash	= new VisualEntity(
-						new AnimState(
-							cWeaponState.getInfo().getFlashAnim()
-						)
-					);
+					for (var i in aWeapons)
+					{
+						cWeaponState	= aWeapons[i];
 
-					cFlash.setPos(this.cPlayer.getPos().x, this.cPlayer.getPos().y);
-					cFlash.setRot(this.cPlayer.getTurretRot());
+						if (cWeaponState.tryFire())
+						{
+							// play weapon fire sound
+							this.cSoundManager.startSound(cWeaponState.getInfo().getFireSoundName(), 0);
 
-					this.aAnimList.push(cFlash);
+							// create muzzle flash
+							var cFlash	= new VisualEntity(
+								new AnimState(
+									cWeaponState.getInfo().getFlashAnim()
+								)
+							);
 
-					// create projectile
-					var cPos	= this.cPlayer.getPos();
-					var cOffset	= cWeaponState.getInfo().getMuzzleOffset();
+							cFlash.setPos(cPlayer.getPos().x, cPlayer.getPos().y);
+							cFlash.setRot(cPlayer.getTurretRot());
 
-					// muzzle offsets are for the right weapon facing upwards, so flip sides if for the left weapon
-					if (cWeaponState == this.cPlayer.getWeaponLeft())
-						cOffset.x	= -cOffset.x;
+							this.aAnimList.push(cFlash);
 
-					// offset projectile's pos by its height
-					cOffset.y	-= cWeaponState.getInfo().getProjInfo().getDim().y;
+							// create projectile
+							var cPos	= cPlayer.getPos();
+							var cOffset	= cWeaponState.getInfo().getMuzzleOffset();
 
-					// rotate pos around player based on turret facing
-					var cRotMat	= new b2.Mat22();
-					cRotMat.Set(this.cPlayer.getTurretRot() - Math.PI / 2);
+							// muzzle offsets are for the right weapon facing upwards, so flip sides if for the left weapon
+							if (cWeaponState == cPlayer.getWeaponLeft())
+								cOffset.x	= -cOffset.x;
 
-					cOffset.MulM(cRotMat);
+							// offset projectile's pos by its height
+							cOffset.y	-= cWeaponState.getInfo().getProjInfo().getDim().y;
 
-					cPos.Add(cOffset);
+							// rotate pos around player based on turret facing
+							var cRotMat	= new b2.Mat22();
+							cRotMat.Set(cPlayer.getTurretRot() - Math.PI / 2);
 
-					var cProj	= new Projectile(
-						this.cPhysicsManager.addBody({
-							cPos : cPos,
-							cDim : cWeaponState.getInfo().getProjInfo().getDim()
-						}),
-						cWeaponState.getInfo().getProjInfo(),
-						this.cPlayer,
-						0.0
-					);
+							cOffset.MulM(cRotMat);
 
-					cProj.getPhysicsBody().SetBullet(true);
-					cProj.getPhysicsBody().SetAngle(this.cPlayer.getTurretRot());
+							cPos.Add(cOffset);
 
-					cProj.setOnContact(
-						Utils.bindFunc(this, this.onProjContact, cProj)
-					);
+							var cProj	= new Projectile(
+								this.cPhysicsManager.addBody({
+									cPos : cPos,
+									cDim : cWeaponState.getInfo().getProjInfo().getDim()
+								}),
+								cWeaponState.getInfo().getProjInfo(),
+								cPlayer,
+								0.0
+							);
 
-					var cVel	= this.cPlayer.getFireVec();
-					cVel.Multiply(cWeaponState.getInfo().getProjInfo().getSpeed());
+							cProj.getPhysicsBody().SetBullet(true);
+							cProj.getPhysicsBody().SetAngle(cPlayer.getTurretRot());
 
-					cProj.setVelocity(cVel.x, cVel.y);
+							cProj.setOnContact(
+								Utils.bindFunc(this, this.onProjContact, cProj)
+							);
 
-					this.aProjList.push(cProj);
+							var cVel	= cPlayer.getFireVec();
+							cVel.Multiply(cWeaponState.getInfo().getProjInfo().getSpeed());
+
+							cProj.setVelocity(cVel.x, cVel.y);
+
+							this.aProjList.push(cProj);
+						}
+					}
 				}
-			}
-		}
+			}.bind(this)
+		);
 	},
 
 	onProjContact : function(cProj, cOtherEnt) {
@@ -374,6 +417,14 @@ var GameTest1	= Class.extend({
 		cAnim.setRot(cProj.getPhysicsBody().GetAngle());
 
 		this.aAnimList.push(cAnim);
+
+		// damage other entity
+		if (cOtherEnt.getType() === PlayerEntity.prototype.getType())
+		{
+			cOtherEnt.damageHitPoints(
+				cProj.getInfo().getDamage()
+			);
+		}
 	},
 
 	updateAnims : function() {
@@ -462,51 +513,54 @@ var GameTest1	= Class.extend({
 
 		zResetContext();
 
-		// draw player
-		// legs
+		// draw players
+		this.aPlayerList.forEach(
+			function(cPlayer) {
+				// legs
+				var cPos	= cPlayer.getPos();
+				var fRot	= cPlayer.getLegRot();
 
-		var cPos	= this.cPlayer.getPos();
-		var fRot	= this.cPlayer.getLegRot();
+				zApplyTransform(cPos, fRot);
 
-		zApplyTransform(cPos, fRot);
+				this.cAtlasRenderer.draw(
+					this.cAtlasParser.getImageData(
+						cPlayer.getLegAnim().getCurrentName()
+					)
+				);
 
-		this.cAtlasRenderer.draw(
-			this.cAtlasParser.getImageData(
-				this.cPlayer.getLegAnim().getCurrentName()
-			)
+				zResetContext();
+				
+				// body
+				fRot		= cPlayer.getTurretRot();
+
+				zApplyTransform(cPos, fRot);
+
+				this.cAtlasRenderer.draw(
+					this.cAtlasParser.getImageData(
+						cPlayer.getTurretName()
+					)
+				);
+
+				// right weapon
+				this.cAtlasRenderer.draw(
+					this.cAtlasParser.getImageData(
+						cPlayer.getWeaponRight().getInfo().getImageName()
+					)
+				);
+
+				// left weapon
+				cCtx.rotate(Math.PI);
+				cCtx.scale(-1.0, -1.0);
+
+				this.cAtlasRenderer.draw(
+					this.cAtlasParser.getImageData(
+						cPlayer.getWeaponLeft().getInfo().getImageName()
+					)
+				);
+
+				zResetContext();
+			}.bind(this)
 		);
-
-		zResetContext();
-		
-		// body
-		fRot		= this.cPlayer.getTurretRot();
-
-		zApplyTransform(cPos, fRot);
-
-		this.cAtlasRenderer.draw(
-			this.cAtlasParser.getImageData(
-				this.cPlayer.getTurretName()
-			)
-		);
-
-		// right weapon
-		this.cAtlasRenderer.draw(
-			this.cAtlasParser.getImageData(
-				this.cPlayer.getWeaponRight().getInfo().getImageName()
-			)
-		);
-
-		// left weapon
-		cCtx.rotate(Math.PI);
-		cCtx.scale(-1.0, -1.0);
-
-		this.cAtlasRenderer.draw(
-			this.cAtlasParser.getImageData(
-				this.cPlayer.getWeaponLeft().getInfo().getImageName()
-			)
-		);
-
-		zResetContext();
 
 		// draw anims
 		var cAnim;
@@ -546,20 +600,24 @@ var GameTest1	= Class.extend({
 
 		var cArea;
 
-		// draw player hit rect
-		cArea	= new Rect(this.cPlayer.getPos().x, this.cPlayer.getPos().y, this.cPlayer.getDim().x, this.cPlayer.getDim().y);
-		cArea.offset(-this.cPlayer.getDim().x / 2, -this.cPlayer.getDim().y / 2);
+		// draw player hit rects
+		this.aPlayerList.forEach(
+			function(cPlayer) {
+				cArea	= new Rect(cPlayer.getPos().x, cPlayer.getPos().y, cPlayer.getDim().x, cPlayer.getDim().y);
+				cArea.offset(-cPlayer.getDim().x / 2, -cPlayer.getDim().y / 2);
 
-		zApplyTransform(cArea.midPoint(), this.cPlayer.getLegRot());
+				zApplyTransform(cArea.midPoint(), cPlayer.getLegRot());
 
-		cArea.scale(this.fGlobalScale, this.fGlobalScale);
+				cArea.scale(this.fGlobalScale, this.fGlobalScale);
 
-		cCtx.beginPath();
-		cCtx.strokeStyle	= "green";
-		cCtx.strokeRect(-cArea.w / 2, -cArea.h / 2, cArea.w, cArea.h);
-		cCtx.closePath();
+				cCtx.beginPath();
+				cCtx.strokeStyle	= "green";
+				cCtx.strokeRect(-cArea.w / 2, -cArea.h / 2, cArea.w, cArea.h);
+				cCtx.closePath();
 
-		zResetContext();
+				zResetContext();
+			}.bind(this)
+		);
 
 		// draw walls
 		var cItem;
@@ -586,12 +644,56 @@ var GameTest1	= Class.extend({
 	shouldCollide : function(cEntA, cEntB) {
 		var bShouldCollide	= true;
 
-		// prevent projectiles from hitting each other
-		if (cEntA.getType() === Projectile.prototype.getType() &&
-			cEntA.getType() === cEntB.getType())
-			bShouldCollide	= false;
+		var sProjType		= Projectile.prototype.getType();
+
+		var zDoProjChecks	= function(cProj, cEnt) {
+			return !(cEnt.getType() === Projectile.prototype.getType() || cProj.cOwner === cEnt);
+		};
+
+		// prevent projectiles from hitting each other or their owners
+		if (cEntA.getType() === sProjType)
+			bShouldCollide	= zDoProjChecks(cEntA, cEntB);
+		else
+		if (cEntB.getType() === sProjType)
+			bShouldCollide	= zDoProjChecks(cEntB, cEntA);
 
 		return bShouldCollide;
+	},
+
+	/**
+	 * Function to be called once a player has run out of hit points; Cleans the player object up and creates their death anim
+	 * Doesn't clean up their projectiles, but that *should* be fine
+	 */
+	destroyPlayer : function(cPlayer) {
+		// remove physics body
+		this.cPhysicsManager.removeBody(
+			cPlayer.getPhysicsBody()
+		);
+
+		// remove from player list
+		for (var i in this.aPlayerList)
+			if (this.aPlayerList[i] === cPlayer)
+			{
+				this.aPlayerList.splice(i, 1);
+				break;
+			}
+
+		// create death sound
+		this.playSound(SoundNames.EXPLODE, cPlayer.getPos());
+
+		// create death anim
+		var cDeathAnim	= new VisualEntity(
+			new AnimState(
+				new AnimInfo(
+					Object.keys(this.cAtlasParser.cImageMap),
+					SequenceNames.LANDMINE_EXPLOSION_LARGE
+				)
+			)
+		);
+
+		cDeathAnim.setPos(cPlayer.getPos().x, cPlayer.getPos().y);
+
+		this.aAnimList.push(cDeathAnim);
 	},
 
 	update : function() {
@@ -602,7 +704,7 @@ var GameTest1	= Class.extend({
 		this.updateInput();
 		this.cPhysicsManager.update();
 
-		this.updatePlayer(iTime);
+		this.updatePlayers(iTime);
 		this.updateAnims();
 
 		this.aProjList.forEach(function(cItem) {
@@ -621,6 +723,13 @@ var GameTest1	= Class.extend({
 				this.aProjList.splice(i, 1);
 			}
 		}
+
+		this.aPlayerList.forEach(
+			function(cPlayer) {
+				if (cPlayer.getIsKilled())
+					this.destroyPlayer(cPlayer);
+			}.bind(this)
+		);
 
 		this.render();
 
