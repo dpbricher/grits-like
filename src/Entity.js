@@ -2,12 +2,20 @@
  * Base entity class
  */
 var Entity	= Class.extend({
-	cPos : new b2.Vec2(0, 0),
+	cPos : null,
 
 	// save dimensions as half width / height because that's the values that Box2D uses
-	cHalfDim : new b2.Vec2(0, 0),
+	cHalfDim : null,
+
+	// type of entity; Should be redefined by any classes that extend this one
+	sType : "Entity",
 
 	bIsKilled : false,
+
+	init : function() {
+		this.cPos		= new b2.Vec2(0, 0);
+		this.cHalfDim	= new b2.Vec2(0, 0);
+	},
 
 	update : function() {
 	},
@@ -38,5 +46,9 @@ var Entity	= Class.extend({
 
 	getIsKilled : function() {
 		return this.bIsKilled;
+	},
+
+	getType : function() {
+		return this.sType;
 	}
 });

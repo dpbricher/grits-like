@@ -1,5 +1,7 @@
 var AtlasRenderer	= Renderer.extend({
 	draw : function(cData, x, y, scaleX, scaleY) {
+		if (x == null) 		x	= 0;
+		if (y == null) 		y	= 0;
 		if (scaleX == null) scaleX	= 1.0;
 		if (scaleY == null) scaleY	= 1.0;
 

@@ -8,6 +8,17 @@ var Utils	= {
 		return audioContext;
 	},
 
+	getRafFunc : function() {
+		return window.requestAnimationFrame ||
+			window.webkitRequestAnimationFrame ||
+			window.mozRequestAnimationFrame ||
+			window.msRequestAnimationFrame ||
+			window.oRequestAnimationFrame ||
+			function(zCallback) {
+				return setTimeout(zCallback, 1.0 / 60.0);
+			};
+	},
+
 	bindFunc : function(cScope, zFunction) {
 		var aBoundArgs	= Array.prototype.slice.call(arguments, 2);
 

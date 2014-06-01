@@ -16,6 +16,10 @@ var Rect	= Class.extend({
 	right : function() { return this.x + this.w },
 	bottom : function() { return this.y + this.h },
 
+	midPoint : function() {
+		return new Vec2(this.x + this.w / 2, this.y + this.h / 2)
+	},
+
 	contains : function(x, y) {
 		return !(
 			this.left() > x ||
@@ -23,6 +27,19 @@ var Rect	= Class.extend({
 			this.top() > y ||
 			this.bottom() < y
 		);
+	},
+
+	offset : function(x, y) {
+		this.x	+= x;
+		this.y	+= y;
+	},
+
+	scale : function(scaleX, scaleY) {
+		this.x	*= scaleX;
+		this.w	*= scaleX;
+
+		this.y	*= scaleY;
+		this.h	*= scaleY;
 	},
 
 	clone : function() {

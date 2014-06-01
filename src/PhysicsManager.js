@@ -50,12 +50,9 @@ var PhysicsManager	= Class.extend({
 
 		var cFixDef				= new b2.FixtureDef();
 
-		if(cEntityDef.bIsBouncy)
-		{
-            cFixDef.density 	= 1.0;
-            cFixDef.friction 	= 0.0;
-            cFixDef.restitution	= 1.0;
-        }
+        cFixDef.density 		= 1.0;
+        cFixDef.friction 		= 0.0;
+        cFixDef.restitution		= (cEntityDef.bIsBouncy) ? 1.0 : 0.0;
 
         cFixDef.shape			= new b2.PolygonShape();
         cFixDef.shape.SetAsBox(cEntityDef.cDim.x / 2, cEntityDef.cDim.y / 2);
@@ -73,20 +70,34 @@ var PhysicsManager	= Class.extend({
 
 		if (typeof(cCallbacks.PostSolve) == "function")
 		{
-			/**
-			 * According to the udacity course we will want to contruct the callback arguments in the following way.
-			 * Will probably look into this myself later, but cba right now :D
-			 */
 			cListener.PostSolve	= function (contact, impulse) {
-				cCallbacks.PostSolve(
-					contact.GetFixtureA().GetBody(),
-                    contact.GetFixtureB().GetBody(),
-                    impulse.normalImpulses[0]
-                );
+				var cEntA	= contact.GetFixtureA().GetBody().GetUserData();
+				var cEntB	= contact.GetFixtureB().GetBody().GetUserData();
+				
+				cCallbacks.PostSolve(cEntA, cEntB, impulse.normalImpulses[0]);
 			};
 		}
 
 		this.cWorld.SetContactListener(cListener);
+	},
+
+	/**
+	 * Similar to addContactListener, but with a b2ContactFilter
+	 */
+	addContactFilter : function (cCallbacks) {
+		var cFilter	= new b2.ContactFilter();
+
+		if (typeof(cCallbacks.ShouldCollide) == "function")
+		{
+			cFilter.ShouldCollide	= function(cFixA, cFixB) {
+				var cEntA	= cFixA.GetBody().GetUserData();
+				var cEntB	= cFixB.GetBody().GetUserData();
+				
+				return cCallbacks.ShouldCollide(cEntA, cEntB);
+			};
+		}
+
+		this.cWorld.SetContactFilter(cFilter);
 	},
 
 	removeBody : function(cBody) {
