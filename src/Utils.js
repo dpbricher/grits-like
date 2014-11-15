@@ -19,6 +19,15 @@ var Utils	= {
 			};
 	},
 
+	getCancelFunc : function() {
+		return window.cancelAnimationFrame ||
+			window.webkitCancelAnimationFrame ||
+			window.mozCancelAnimationFrame ||
+			window.msCancelAnimationFrame ||
+			window.oCancelAnimationFrame ||
+			window.clearTimeout;
+	},
+
 	bindFunc : function(cScope, zFunction) {
 		var aBoundArgs	= Array.prototype.slice.call(arguments, 2);
 

@@ -1,5 +1,6 @@
 var Main	= Class.extend({
 	init : function() {
-		new GameTest1();
+		var game	= new Game1();
+		game.start();
 	}
 });
