@@ -1,4 +1,16 @@
 var Game1	= Class.extend({
+	cStage : null,
+
+	cInputManager : null,
+	cPhysicsManager : null,
+
+	cLoader : null,
+
+	cSoundLoader : null,
+	cSoundManager : null,
+
+	cPreloader : null,
+
 	cGameEngine : null,
 	cInputEngine : null,
 	cRenderEngine : null,
@@ -13,7 +25,19 @@ var Game1	= Class.extend({
 	// time of last update
 	iLastUpTime : 0,
 
-	init : function() {
+	init : function(cStage) {
+		this.cStage			= cStage;
+
+		this.cLoader		= new Loader();
+		this.cAtlasParser	= new AtlasParser();
+		this.cTiledParser	= new TiledParser();
+
+		// this.cAtlasRenderer	= new AtlasRenderer(this.cStage, this.cAtlasParser);
+		// this.cTiledRenderer	= new CachedTiledRenderer(this.cStage, this.cTiledParser);
+		this.cSoundLoader	= new SoundLoader(this.cLoader, new (Utils.getAudioContextClass())());
+
+		this.cPreloader		= new Preload1(this.cLoader, this.cSoundLoader, this.cAtlasParser, this.cTiledParser);
+
 		this.cGameEngine	= new GameEngine();
 		this.cInputEngine	= new InputEngine();
 		this.cRenderEngine	= new RenderEngine();
@@ -27,7 +51,12 @@ var Game1	= Class.extend({
 	},
 
 	start : function() {
-		this.update();
+		this.cPreloader.startLoading(
+			function() {
+				console.log("All loading completed");
+			}
+		);
+		// this.update();
 	},
 
 	stop : function() {
