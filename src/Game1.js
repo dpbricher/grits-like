@@ -9,6 +9,12 @@ var Game1	= Class.extend({
 	cSoundLoader : null,
 	cSoundManager : null,
 
+	cAtlasParser : null,
+	cTiledParser : null,
+
+	cAtlasRenderer : null,
+	cTiledRenderer : null,
+
 	cPreloader : null,
 
 	cGameEngine : null,
@@ -16,11 +22,11 @@ var Game1	= Class.extend({
 	cRenderEngine : null,
 	cPhysicsEngine : null,
 
+	cUpHandle : null,
+
 	zRafFunc : null,
 	zCancelFunc : null,
 	zScopedUpdate : null,
-
-	cUpHandle : null,
 
 	// time of last update
 	iLastUpTime : 0,
@@ -32,18 +38,9 @@ var Game1	= Class.extend({
 		this.cAtlasParser	= new AtlasParser();
 		this.cTiledParser	= new TiledParser();
 
-		// this.cAtlasRenderer	= new AtlasRenderer(this.cStage, this.cAtlasParser);
-		// this.cTiledRenderer	= new CachedTiledRenderer(this.cStage, this.cTiledParser);
 		this.cSoundLoader	= new SoundLoader(this.cLoader, new (Utils.getAudioContextClass())());
 
 		this.cPreloader		= new Preload1(this.cLoader, this.cSoundLoader, this.cAtlasParser, this.cTiledParser);
-
-		this.cGameEngine	= new GameEngine();
-		this.cInputEngine	= new InputEngine();
-		this.cRenderEngine	= new RenderEngine();
-		this.cPhysicsEngine	= new PhysicsEngine();
-
-		this.iLastUpTime	= Date.now();
 
 		this.zRafFunc		= Utils.getRafFunc();
 		this.zCancelFunc	= Utils.getCancelFunc();
@@ -52,11 +49,8 @@ var Game1	= Class.extend({
 
 	start : function() {
 		this.cPreloader.startLoading(
-			function() {
-				console.log("All loading completed");
-			}
+			Utils.bindFunc(this, this.onPreloadComplete)
 		);
-		// this.update();
 	},
 
 	stop : function() {
@@ -77,6 +71,20 @@ var Game1	= Class.extend({
 		this.iLastUpTime	= iNow;
 
 		this._scheduleUpdate();
+	},
+
+	onPreloadComplete : function() {
+		this.cAtlasRenderer	= new AtlasRenderer(this.cStage, this.cPreloader.getAtlasImage());
+		this.cTiledRenderer	= new CachedTiledRenderer(this.cStage, this.cPreloader.getTiledImage());
+
+		this.cGameEngine	= new GameEngine();
+		this.cInputEngine	= new InputEngine();
+		this.cRenderEngine	= new RenderEngine();
+		this.cPhysicsEngine	= new PhysicsEngine();
+
+		this.iLastUpTime	= Date.now();
+
+		this.update();
 	},
 
 

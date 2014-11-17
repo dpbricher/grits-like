@@ -4,6 +4,7 @@
 var Preload1	= Class.extend({
 	DATA_DIR_PATH : "data",
 	IMAGE_DIR_PATH : "images",
+	SOUND_DIR_PATH : "sounds",
 
 	IMAGE_JSON_NAME : "grits_effects.json",
 	MAP_JSON_NAME : "map2.json",
@@ -76,7 +77,7 @@ var Preload1	= Class.extend({
 			if (sName == "BG_MENU")
 				continue;
 
-			aSoundList.push(SoundNames[sName]);
+			aSoundList.push(this.SOUND_DIR_PATH + "/" + SoundNames[sName]);
 		}
 
 		this.cSoundLoader.loadSounds(

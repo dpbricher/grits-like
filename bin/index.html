@@ -62,8 +62,13 @@
 		<canvas id="stage"></canvas>
 		<script type="text/javascript">
 
-		var onload	= function() {
-			new Main();
+		var hasLoaded	= false;
+		var onload		= function() {
+			if (!hasLoaded)
+			{
+				hasLoaded	= true;
+				new Main();
+			}
 		};
 
 		if (document == null)
