@@ -28,6 +28,17 @@ var Utils	= {
 			window.clearTimeout;
 	},
 
+	clone : function(cClonee) {
+		var cCopy	= {};
+
+		for (var p in cClonee)
+		{
+			cCopy[p]	= cClonee[p];
+		}
+
+		return cCopy;
+	},
+
 	bindFunc : function(cScope, zFunction) {
 		var aBoundArgs	= Array.prototype.slice.call(arguments, 2);
 

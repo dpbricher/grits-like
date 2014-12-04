@@ -1,5 +1,8 @@
 var InputEngine	= Class.extend({
-	init : function() {
+	cInputManager : null,
+
+	init : function(cInputManager) {
+		this.cInputManager	= cInputManager;
 	},
 
 	update : function(t) {

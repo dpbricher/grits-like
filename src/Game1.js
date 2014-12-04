@@ -25,6 +25,7 @@ var Game1	= Class.extend({
 	cUpHandle : null,
 
 	zRafFunc : null,
+	// request animation frame cancel function
 	zCancelFunc : null,
 	zScopedUpdate : null,
 
@@ -74,11 +75,17 @@ var Game1	= Class.extend({
 	},
 
 	onPreloadComplete : function() {
+		var cInputListener	= this.cStage;
+
 		this.cAtlasRenderer	= new AtlasRenderer(this.cStage, this.cPreloader.getAtlasImage());
 		this.cTiledRenderer	= new CachedTiledRenderer(this.cStage, this.cPreloader.getTiledImage());
 
+		this.cInputManager	= new InputManager(
+			new KeyboardManager(cInputListener), new MouseManager(cInputListener)
+		);
+
 		this.cGameEngine	= new GameEngine();
-		this.cInputEngine	= new InputEngine();
+		this.cInputEngine	= new InputEngine(this.cInputManager);
 		this.cRenderEngine	= new RenderEngine();
 		this.cPhysicsEngine	= new PhysicsEngine();
 
