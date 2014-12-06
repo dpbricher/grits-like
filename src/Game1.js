@@ -75,6 +75,8 @@ var Game1	= Class.extend({
 		var iNow			= Date.now();
 		var t				= iNow - this.iLastUpTime;
 
+		this.cPlayer1.update(t);
+
 		this.cGameEngine.update(t);
 		this.cInputEngine.update(t);
 		this.cRenderEngine.update(t);
@@ -97,6 +99,39 @@ var Game1	= Class.extend({
 			})
 		);
 
+		var cFlashAnim, cProjAnim, cImpactAnim;
+		var aSequenceList	= Object.keys(this.cAtlasParser.cImageMap);
+
+		cFlashAnim	= new AnimInfo(aSequenceList, SequenceNames.MACHGUN_MUZZLE);
+		cProjAnim	= new AnimInfo(aSequenceList, SequenceNames.MACHGUN_PROJECTILE);
+		cImpactAnim	= new AnimInfo(aSequenceList, SequenceNames.MACHGUN_IMPACT);
+		
+		var cMachProj		= new ProjectileInfo(cProjAnim, cImpactAnim, new b2.Vec2(0.2, 0.2), SoundNames.GRENADE, 6.0 * 10, 1.0);
+		var cMachGun		= new WeaponInfo(cFlashAnim, cMachProj,
+			new b2.Vec2(this.cPlayer1.getDim().x * 0.35, -this.cPlayer1.getDim().y / 2), ImageNames.MACHGUN,
+			SoundNames.MACH_GUN, "machgun", 200);
+
+		cFlashAnim	= new AnimInfo(aSequenceList, SequenceNames.ROCKET_MUZZLE);
+		cProjAnim	= new AnimInfo(aSequenceList, SequenceNames.ROCKET_PROJECTILE);
+		cImpactAnim	= new AnimInfo(aSequenceList, SequenceNames.ROCKET_IMPACT);
+
+		var cRocketProj		= new ProjectileInfo(cProjAnim, cImpactAnim, new b2.Vec2(0.4, 0.4), SoundNames.EXPLODE, 6.0 * 8, 10.0);
+		var cRocketLauncher	= new WeaponInfo(cFlashAnim, cRocketProj,
+			new b2.Vec2(this.cPlayer1.getDim().x / 4, -this.cPlayer1.getDim().y / 2), ImageNames.ROCKET_LAUNCHER,
+			SoundNames.ROCKET, "rocket_launcher", 1000);
+
+		this.cPlayer1.setWeaponLeft(
+			new WeaponState(cRocketLauncher)
+		);
+		this.cPlayer1.setWeaponRight(
+			new WeaponState(cMachGun)
+		);
+		this.cPlayer1.getWeaponLeft().setAmmoLeft(Number.POSITIVE_INFINITY);
+		this.cPlayer1.getWeaponRight().setAmmoLeft(Number.POSITIVE_INFINITY);
+
+		this.cPlayer1.setMoveSpeed(60.0 * 50);
+		this.cPlayer1.setHitPoints(100);
+
 		this.cEntityList.addEntity(this.cPlayer1);
 
 		this.cAtlasRenderer	= new AtlasRenderer(this.cStage,
@@ -107,16 +142,17 @@ var Game1	= Class.extend({
 			this.cPreloader.getTiledImage());
 
 		this.cInputManager	= new InputManager(
-			new KeyboardManager(cInputListener),
+			new KeyboardManager(document.body),
 			new MouseManager(cInputListener)
 		);
 
 		this.cGameEngine	= new GameEngine();
-		this.cInputEngine	= new InputEngine(this.cInputManager);
+		this.cInputEngine	= new InputEngine(this.cPlayer1,
+			this.cInputManager);
 		this.cRenderEngine	= new RenderEngine(this.cAtlasParser,
 			this.cTiledParser, this.cAtlasRenderer, this.cTiledRenderer,
 			this.cEntityList);
-		this.cPhysicsEngine	= new PhysicsEngine();
+		this.cPhysicsEngine	= new PhysicsEngine(this.cPhysicsManager);
 
 		this.cRenderEngine.addCameraTarget(this.cStage, this.cPlayer1,
 			new Rect(0, 0, 512.0, 512.0));
