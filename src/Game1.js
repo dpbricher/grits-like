@@ -1,6 +1,8 @@
 var Game1	= Class.extend({
 	cStage : null,
 
+	cEntityList : null,
+
 	cInputManager : null,
 	cPhysicsManager : null,
 
@@ -35,13 +37,20 @@ var Game1	= Class.extend({
 	init : function(cStage) {
 		this.cStage			= cStage;
 
+		this.cStage.width	= 512.0;
+		this.cStage.height	= 512.0;
+
 		this.cLoader		= new Loader();
 		this.cAtlasParser	= new AtlasParser();
 		this.cTiledParser	= new TiledParser();
 
-		this.cSoundLoader	= new SoundLoader(this.cLoader, new (Utils.getAudioContextClass())());
+		this.cEntityList	= new EntityList();
 
-		this.cPreloader		= new Preload1(this.cLoader, this.cSoundLoader, this.cAtlasParser, this.cTiledParser);
+		this.cSoundLoader	= new SoundLoader(this.cLoader,
+			new (Utils.getAudioContextClass())());
+
+		this.cPreloader		= new Preload1(this.cLoader, this.cSoundLoader,
+			this.cAtlasParser, this.cTiledParser);
 
 		this.zRafFunc		= Utils.getRafFunc();
 		this.zCancelFunc	= Utils.getCancelFunc();
@@ -77,17 +86,27 @@ var Game1	= Class.extend({
 	onPreloadComplete : function() {
 		var cInputListener	= this.cStage;
 
-		this.cAtlasRenderer	= new AtlasRenderer(this.cStage, this.cPreloader.getAtlasImage());
-		this.cTiledRenderer	= new CachedTiledRenderer(this.cStage, this.cPreloader.getTiledImage());
+		this.cAtlasRenderer	= new AtlasRenderer(this.cStage,
+			this.cPreloader.getAtlasImage());
+
+		this.cTiledRenderer	= new CachedTiledRenderer(this.cStage);
+		this.cTiledRenderer.cacheImage(this.cTiledParser,
+			this.cPreloader.getTiledImage());
 
 		this.cInputManager	= new InputManager(
-			new KeyboardManager(cInputListener), new MouseManager(cInputListener)
+			new KeyboardManager(cInputListener),
+			new MouseManager(cInputListener)
 		);
 
 		this.cGameEngine	= new GameEngine();
 		this.cInputEngine	= new InputEngine(this.cInputManager);
-		this.cRenderEngine	= new RenderEngine();
+		this.cRenderEngine	= new RenderEngine(this.cAtlasParser,
+			this.cTiledParser, this.cAtlasRenderer, this.cTiledRenderer,
+			this.cEntityList);
 		this.cPhysicsEngine	= new PhysicsEngine();
+
+		this.cRenderEngine.addCameraTarget(this.cStage, new Entity(),
+			new Rect(0, 0, 256, 256));
 
 		this.iLastUpTime	= Date.now();
 
