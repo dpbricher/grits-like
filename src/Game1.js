@@ -19,6 +19,8 @@ var Game1	= Class.extend({
 
 	cPreloader : null,
 
+	cPlayer1 : null,
+
 	cGameEngine : null,
 	cInputEngine : null,
 	cRenderEngine : null,
@@ -84,7 +86,18 @@ var Game1	= Class.extend({
 	},
 
 	onPreloadComplete : function() {
-		var cInputListener	= this.cStage;
+		var cInputListener		= this.cStage;
+
+		this.cPhysicsManager	= new PhysicsManager(new b2.Vec2(0, 0), false);
+
+		this.cPlayer1			= new PlayerEntity(
+			this.cPhysicsManager.addBody({
+				cPos : new b2.Vec2(0, 0),
+				cDim : new b2.Vec2(5.0, 5.0)
+			})
+		);
+
+		this.cEntityList.addEntity(this.cPlayer1);
 
 		this.cAtlasRenderer	= new AtlasRenderer(this.cStage,
 			this.cPreloader.getAtlasImage());
@@ -105,8 +118,8 @@ var Game1	= Class.extend({
 			this.cEntityList);
 		this.cPhysicsEngine	= new PhysicsEngine();
 
-		this.cRenderEngine.addCameraTarget(this.cStage, new Entity(),
-			new Rect(0, 0, 256, 256));
+		this.cRenderEngine.addCameraTarget(this.cStage, this.cPlayer1,
+			new Rect(0, 0, 512.0, 512.0));
 
 		this.iLastUpTime	= Date.now();
 

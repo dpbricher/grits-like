@@ -14,19 +14,19 @@ var EntityList	= Class.extend({
 		switch (cEntity.getType())
 		{
 			case Projectile.prototype.getType():
-				aProjList.push(cEntity);
+				this.aProjList.push(cEntity);
 				break;
 		
 			case PlayerEntity.prototype.getType():
-				aPlayerList.push(cEntity);
+				this.aPlayerList.push(cEntity);
 				break;
 		
 			case PhysicsEntity.prototype.getType():
-				aWallList.push(cEntity);
+				this.aWallList.push(cEntity);
 				break;
 		
 			case VisualEntity.prototype.getType():
-				aVisualList.push(cEntity);
+				this.aVisualList.push(cEntity);
 				break;
 
 			default:
@@ -35,25 +35,25 @@ var EntityList	= Class.extend({
 	},
 
 	getProjectiles : function() {
-		return aProjList;
+		return this.aProjList;
 	},
 
 	getPlayers : function() {
-		return aPlayerList;
+		return this.aPlayerList;
 	},
 
 	getWalls : function() {
-		return aWallList;
+		return this.aWallList;
 	},
 
 	getVisuals : function() {
-		return aVisualList;
+		return this.aVisualList;
 	},
 
 	getAll : function() {
-		return aProjList
-			.concat(aPlayerList)
-			.concat(aWallList)
-			.concat(aVisualList);
+		return this.aProjList
+			.concat(this.aPlayerList)
+			.concat(this.aWallList)
+			.concat(this.aVisualList);
 	}
 });

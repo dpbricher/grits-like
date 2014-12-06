@@ -37,6 +37,10 @@ var RenderEngine	= Class.extend({
 
 		this.cMapBounds		= new Rect(0, 0, this.cTiledRenderer.getDim().x,
 			this.cTiledRenderer.getDim().y);
+
+		this.cEntityList.getPlayers().forEach(
+			this._initPlayer.bind(this)
+		);
 	},
 
 	update : function(t) {
@@ -51,7 +55,7 @@ var RenderEngine	= Class.extend({
 		}
 	},
 
-	addCameraTarget : function (cCanvas, cEntity, cViewport) {
+	addCameraTarget : function(cCanvas, cEntity, cViewport) {
 		this.aCameraTargets.push({
 			cCanvas : cCanvas,
 			cEntity : cEntity,
@@ -59,8 +63,33 @@ var RenderEngine	= Class.extend({
 		});
 	},
 
-	// note that cCanvas param is currently being ignored
-	_renderViewport : function (cCanvas, cFocus, cViewport) {
+
+	_initPlayer : function(cPlayer) {
+		cPlayer.initLegAnim(
+			new AnimInfo(
+				Object.keys(this.cAtlasParser.cImageMap),
+				SequenceNames.WALK_RIGHT
+			)
+		);
+
+		cPlayer.setTurretName(ImageNames.TURRET);
+	},
+
+	_centreContext : function(cCtx, cViewport) {
+		cCtx.setTransform(1, 0, 0, 1, -cViewport.x, -cViewport.y);
+	},
+
+	_transformContext : function(cCtx, cPos, fRot) {
+		cCtx.translate(cPos.x, cPos.y);
+		cCtx.rotate(fRot);
+	},
+
+	_renderViewport : function(cCanvas, cFocus, cViewport) {
+		// clear canvas
+		cCanvas.width	= cCanvas.width;
+
+		var cCtx		= cCanvas.getContext("2d");
+
 		// centre viewport on focus target
 		cViewport.x	= cFocus.getPos().x - cViewport.w / 2;
 		cViewport.y	= cFocus.getPos().y - cViewport.h / 2;
@@ -78,9 +107,55 @@ var RenderEngine	= Class.extend({
 		if (cViewport.bottom() > this.cMapBounds.bottom())
 			cViewport.y	= this.cMapBounds.bottom() - cViewport.h;
 
+		// cCtx.setTransform(1, 0, 0, 1, 0, 0);
+
 		// render bg
 		this.cTiledRenderer.draw(cViewport);
 
 		// render entities
+		this.cEntityList.getPlayers().forEach(
+			function(cPlayer) {
+				this._renderPlayer(cCtx, cViewport, cPlayer)
+			}.bind(this)
+		);
+	},
+
+	_renderPlayer : function(cCtx, cViewport, cPlayer) {
+		this._centreContext(cCtx, cViewport);
+		this._transformContext(cCtx, cPlayer.getPos(), cPlayer.getLegRot());
+
+		// legs
+		this.cAtlasRenderer.draw(
+			this.cAtlasParser.getImageData(
+				cPlayer.getLegAnim().getCurrentName()
+			)
+		);
+
+		this._centreContext(cCtx, cViewport);
+		this._transformContext(cCtx, cPlayer.getPos(), cPlayer.getTurretRot());
+
+		// turret
+		this.cAtlasRenderer.draw(
+			this.cAtlasParser.getImageData(
+				cPlayer.getTurretName()
+			)
+		);
+
+		/**
+		 * enable these once weapons have been implemented
+		 *
+		// right weapon
+		this.cAtlasRenderer.draw(
+			this.cAtlasParser.getImageData(
+				cPlayer.getWeaponRight().getInfo().getImageName()
+			)
+		);
+
+		// left weapon
+		this.cAtlasRenderer.draw(
+			this.cAtlasParser.getImageData(
+				cPlayer.getWeaponLeft().getInfo().getImageName()
+			)
+		);*/
 	}
 });
