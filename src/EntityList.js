@@ -50,6 +50,22 @@ var EntityList	= Class.extend({
 		return this.aVisualList;
 	},
 
+	setProjectiles : function(aProjList) {
+		this.aProjList		= aProjList;
+	},
+
+	setPlayers : function(aPlayerList) {
+		this.aPlayerList	= aPlayerList;
+	},
+
+	setWalls : function(aWallList) {
+		this.aWallList		= aWallList;
+	},
+
+	setVisuals : function(aVisualList) {
+		this.aVisualList	= aVisualList;
+	},
+
 	getAll : function() {
 		return this.aProjList
 			.concat(this.aPlayerList)

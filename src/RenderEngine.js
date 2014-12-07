@@ -52,6 +52,22 @@ var RenderEngine	= Class.extend({
 			}.bind(this)
 		);
 
+		var aVisuals	= this.cEntityList.getVisuals();
+
+		aVisuals.forEach(
+			function(cVisual) {
+				this._updateVisual(cVisual, t)
+			}.bind(this)
+		);
+
+		aVisuals		= aVisuals.filter(
+			function(cVisual) {
+				return !cVisual.getIsKilled();
+			}
+		);
+
+		this.cEntityList.setVisuals(aVisuals);
+
 		for (var i in this.aCameraTargets)
 		{
 			cParams	= this.aCameraTargets[i];
@@ -84,6 +100,14 @@ var RenderEngine	= Class.extend({
 	_updatePlayer : function(cPlayer, t) {
 		if (cPlayer.getVelocity().LengthSquared() > 0)
 			cPlayer.getLegAnim().stepFrames(1);
+	},
+
+	_updateVisual : function(cVisual, t) {
+		if (cVisual.getAnim().getCurrentFrame()
+			< cVisual.getAnim().getAnimInfo().getLastFrame())
+			cVisual.getAnim().stepFrames(1);
+		else
+			cVisual.flagKilled();
 	},
 
 	_centreContext : function(cCtx, cViewport) {
@@ -138,11 +162,29 @@ var RenderEngine	= Class.extend({
 				this._renderProjectile(cCtx, cViewport, cProj)
 			}.bind(this)
 		);
+
+		this.cEntityList.getVisuals().forEach(
+			function(cVisual) {
+				this._renderVisual(cCtx, cViewport, cVisual)
+			}.bind(this)
+		);
+	},
+
+	_renderVisual : function(cCtx, cViewport, cVisual) {
+		this._centreContext(cCtx, cViewport);
+
+		this._transformContext(cCtx, cVisual.getPos(), cVisual.getRot());
+
+		this.cAtlasRenderer.draw(
+			this.cAtlasParser.getImageData(
+				cVisual.getAnim().getCurrentName()
+			)
+		);
 	},
 
 	_renderProjectile : function(cCtx, cViewport, cProj) {
 		this._centreContext(cCtx, cViewport);
-		
+
 		this._transformContext(cCtx, cProj.getPos(),
 			cProj.getPhysicsBody().GetAngle());
 

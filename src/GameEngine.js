@@ -66,6 +66,12 @@ var GameEngine	= Class.extend({
 
 	update : function(t) {
 		this._updatePlayer(this.cPlayer1, t);
+
+		this.cEntityList.getProjectiles().forEach(
+			function(cProj) {
+				cProj.update();
+			}
+		);
 	},
 
 	_updatePlayer : function(cPlayer, t) {
@@ -74,7 +80,7 @@ var GameEngine	= Class.extend({
 		if (cPlayer.getHitPoints() <= 0)
 			cPlayer.flagKilled();
 
-		/*if (cPlayer.getFireVec().LengthSquared() > 0)
+		if (cPlayer.getFireVec().LengthSquared() > 0)
 		{
 			var cWeaponState;
 			var aWeapons		= [
@@ -149,6 +155,6 @@ var GameEngine	= Class.extend({
 					this.cEntityList.addEntity(cProj);
 				}
 			}
-		}*/
+		}
 	}
 });
