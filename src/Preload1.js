@@ -80,9 +80,10 @@ var Preload1	= Class.extend({
 			aSoundList.push(this.SOUND_DIR_PATH + "/" + SoundNames[sName]);
 		}
 
-		this.cSoundLoader.loadSounds(
+		/*this.cSoundLoader.loadSounds(
 			aSoundList, Utils.bindFunc(this, this.onSoundsLoaded)
-		);
+		);*/
+		this.onSoundsLoaded();
 	},
 
 	onSoundsLoaded : function(cData) {

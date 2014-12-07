@@ -46,6 +46,12 @@ var RenderEngine	= Class.extend({
 	update : function(t) {
 		var cParams;
 		
+		this.cEntityList.getPlayers().forEach(
+			function(cPlayer) {
+				this._updatePlayer(cPlayer, t)
+			}.bind(this)
+		);
+
 		for (var i in this.aCameraTargets)
 		{
 			cParams	= this.aCameraTargets[i];
@@ -75,12 +81,20 @@ var RenderEngine	= Class.extend({
 		cPlayer.setTurretName(ImageNames.TURRET);
 	},
 
+	_updatePlayer : function(cPlayer, t) {
+		if (cPlayer.getVelocity().LengthSquared() > 0)
+			cPlayer.getLegAnim().stepFrames(1);
+	},
+
 	_centreContext : function(cCtx, cViewport) {
 		cCtx.setTransform(1, 0, 0, 1, -cViewport.x, -cViewport.y);
 	},
 
-	_transformContext : function(cCtx, cPos, fRot) {
-		cCtx.translate(cPos.x, cPos.y);
+	_transformContext : function(cCtx, cPos, fRot, cScale) {
+		if (cScale == null)
+			cScale	= new Vec2(this.fRenderScale, this.fRenderScale);
+
+		cCtx.translate(cPos.x * cScale.x, cPos.y * cScale.y);
 		cCtx.rotate(fRot);
 	},
 
@@ -91,8 +105,8 @@ var RenderEngine	= Class.extend({
 		var cCtx		= cCanvas.getContext("2d");
 
 		// centre viewport on focus target
-		cViewport.x	= cFocus.getPos().x - cViewport.w / 2;
-		cViewport.y	= cFocus.getPos().y - cViewport.h / 2;
+		cViewport.x	= cFocus.getPos().x * this.fRenderScale - cViewport.w / 2;
+		cViewport.y	= cFocus.getPos().y * this.fRenderScale - cViewport.h / 2;
 
 		// clamp to map bounds
 		if (cViewport.x < this.cMapBounds.x)
@@ -118,6 +132,25 @@ var RenderEngine	= Class.extend({
 				this._renderPlayer(cCtx, cViewport, cPlayer)
 			}.bind(this)
 		);
+
+		this.cEntityList.getProjectiles().forEach(
+			function(cProj) {
+				this._renderProjectile(cCtx, cViewport, cProj)
+			}.bind(this)
+		);
+	},
+
+	_renderProjectile : function(cCtx, cViewport, cProj) {
+		this._centreContext(cCtx, cViewport);
+		
+		this._transformContext(cCtx, cProj.getPos(),
+			cProj.getPhysicsBody().GetAngle());
+
+		this.cAtlasRenderer.draw(
+			this.cAtlasParser.getImageData(
+				cProj.getAnim().getCurrentName()
+			)
+		);
 	},
 
 	_renderPlayer : function(cCtx, cViewport, cPlayer) {
@@ -141,9 +174,6 @@ var RenderEngine	= Class.extend({
 			)
 		);
 
-		/**
-		 * enable these once weapons have been implemented
-		 *
 		// right weapon
 		this.cAtlasRenderer.draw(
 			this.cAtlasParser.getImageData(
@@ -156,6 +186,6 @@ var RenderEngine	= Class.extend({
 			this.cAtlasParser.getImageData(
 				cPlayer.getWeaponLeft().getInfo().getImageName()
 			)
-		);*/
+		);
 	}
 });
